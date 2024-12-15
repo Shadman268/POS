@@ -1,0 +1,131 @@
+.payment {
+    width: 100%;
+}
+
+.total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.2vw;
+}
+
+.discount {
+    display: flex;
+    flex-direction: column;
+}
+
+.apply-discount {
+    display: flex;
+    font-size: 1.2vw;
+    margin-top: 0.5vw;
+    align-items: center;
+}
+  
+.discount-form {
+    display: flex;
+    align-items: center;
+    transform: scale(0.98);
+}
+
+.discount-checkbox {
+    margin-right: auto;
+    transform: scale(0.95);
+}
+
+.discount-input {
+    width: 60%;
+}
+
+.unit-select {
+    width: 40%;
+}
+
+.after-discount {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.2vw;
+}
+
+.cash {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2vw;
+}
+
+.cash-form {
+    transform: scale(0.98);
+}
+
+.change {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.2vw;
+}
+
+.customer {
+    margin-bottom: auto;
+    margin-left: auto; 
+    margin-right: auto;
+}
+
+.customer-content {
+    display: flex;
+    align-items: center;
+    height: min-content;
+}
+
+.customer-add {
+    cursor: pointer;
+}
+
+.search {
+    display: flex;
+    margin-left: auto; 
+    margin-right: auto;
+}
+
+.item-list {
+    display: flex;
+    flex-grow: 1;
+    margin-left: auto; 
+    margin-right: auto;
+    background-color:whitesmoke;
+}
+
+.list-header {
+    width: 100%;
+    table-layout: fixed;
+    height: min-content;
+    border-right: none;
+    text-align: center;
+}
+
+.item-col {
+    width: 55%;
+    border: 1px solid black;
+    vertical-align: middle;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+.qty-col, .price-col, .subtotal-col {
+    width: 15%;
+    vertical-align: middle;
+    border: 1px solid black;
+}
+
+.delete-col {
+    width:5%;
+    color: red;
+}
+
+.delete-col-item {
+    @extend .delete-col;
+    color: black;
+}
+
+.delete-icon {
+    vertical-align: middle;
+}

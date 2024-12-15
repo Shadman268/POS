@@ -1,0 +1,39 @@
+.topbar {
+    height: 40px;
+}
+
+.nav-icon {
+    display: flex;
+    justify-content: flex-end; 
+    align-items: center;
+    width: 100%;
+    gap: 2vmin;
+}
+
+.button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: dodgerblue;
+    border: none;
+    cursor: pointer;
+    width: 3.2vw;
+}
+
+.button :hover {
+    color: aqua;
+    background-color:rgb(15, 35, 218);
+}
+
+.icon {
+    display: flex;
+    font-size: 1vw;
+    align-items: center;
+    justify-content: center;
+}
+
+.label {
+    font-size: 0.5vw;
+    color: white;
+}
