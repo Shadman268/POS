@@ -23,7 +23,7 @@ jobs:
         working-directory: Frontend/POS
 
       - name: Build Angular app
-        run: npm run build -- --configuration production
+        run: npm run build -- --configuration production --base-href /POS/
         working-directory: Frontend/POS
 
       - name: Show contents of dist folder
