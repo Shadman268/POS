@@ -34,3 +34,4 @@ jobs:
         with:
           branch: gh-pages
           folder: Frontend/POS/dist/pos
+          token: ${{ secrets.GITHUB_TOKEN }}
