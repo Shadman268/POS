@@ -16,5 +16,13 @@ namespace Backend.Repositories
         {
             return await _context.Products.ToListAsync();
         }
+
+        public async Task<Product> CreateProductAsync(Product product)
+        {
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+            return product;
+        }
+
     }
 }

@@ -24,5 +24,16 @@ namespace Backend.Controllers
             return Ok(products);
         }
 
+        [HttpPost]
+        public async Task<ActionResult<ProductDto>> CreateProduct([FromBody] ProductDto productDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var createdProduct = await _productService.CreateProductAsync(productDto);
+            return CreatedAtAction(nameof(GetAllProducts), new { id = createdProduct.Id }, createdProduct);
+        }
+
+
     }
 }

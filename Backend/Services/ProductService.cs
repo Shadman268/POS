@@ -2,6 +2,7 @@
 using Backend.DTOs;
 using Backend.Repositories.Interfaces;
 using Backend.Services.Interfaces;
+using Backend.Models;
 
 namespace Backend.Services
 {
@@ -20,5 +21,13 @@ namespace Backend.Services
             var products = await _repository.GetAllProductsAsync();
             return _mapper.Map<IEnumerable<ProductDto>>(products);
         }
+
+        public async Task<ProductDto> CreateProductAsync(ProductDto productDto)
+        {
+            var product = _mapper.Map<Product>(productDto);
+            var createdProduct = await _repository.CreateProductAsync(product);
+            return _mapper.Map<ProductDto>(createdProduct);
+        }
+
     }
 }
