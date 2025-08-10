@@ -1,0 +1,28 @@
+<form #productForm="ngForm" (ngSubmit)="onSubmit()">
+  <h2 mat-dialog-title>Add Product</h2>
+  <mat-dialog-content>
+    
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Product Name</mat-label>
+      <input matInput name="name" [(ngModel)]="productName" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Price</mat-label>
+      <input matInput type="number" name="price" [(ngModel)]="price" min="0" required />
+    </mat-form-field>
+
+    <div class="full-width">
+  <label style="margin-right: 5px;">Image</label>
+  <input type="file" (change)="onImageSelected($event)" accept="image/*" />
+</div>
+
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="actions-right">
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="!productForm.valid">
+      Submit
+    </button>
+  </mat-dialog-actions>
+</form>

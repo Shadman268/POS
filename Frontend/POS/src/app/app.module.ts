@@ -19,6 +19,9 @@ import {MatMenuModule} from '@angular/material/menu';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatListModule} from '@angular/material/list';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
+import { HttpClientModule } from '@angular/common/http';
+import { AddProductDialogComponent } from './shared/dialogs/add-product-dialog/add-product-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -26,13 +29,16 @@ import { NavbarComponent } from './shared/components/navbar/navbar.component';
     PosUiComponent,
     JournalComponent,
     ProductViewComponent,
-    NavbarComponent
+    NavbarComponent,
+    AddProductDialogComponent
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     AppRoutingModule,
     ReactiveFormsModule,
     MatButtonModule,
+    MatDialogModule,
     MatCardModule,
     MatCheckboxModule,
     BrowserAnimationsModule,
