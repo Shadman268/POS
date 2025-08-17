@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { AddProductDialogComponent } from '../../dialogs/add-product-dialog/add-product-dialog.component';
+import { ProductData } from 'src/app/core/models/product-data';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-navbar',
@@ -9,16 +11,32 @@ import { AddProductDialogComponent } from '../../dialogs/add-product-dialog/add-
 })
 export class NavbarComponent implements OnInit {
 
-  constructor(private dialog: MatDialog) { }
+  constructor(private dialog: MatDialog, private http: HttpClient) { }
 
   ngOnInit(): void {
   }
 
   addProduct() {
     const dialogRef = this.dialog.open(AddProductDialogComponent, {
-      width:'400px',
+      width: '400px',
       height: '330px'
-    })
-    }
+    });
+
+    dialogRef.afterClosed().subscribe((result: ProductData) => {
+      if (result) {
+        console.log('Product Data:', result);
+        const formData = new FormData();
+        formData.append("productName", result.productName);
+        formData.append("price", result.price.toString());
+        if (result.image) {
+          formData.append("image", result.image); // actual File object
+        }
+
+        this.http.post("http://localhost:5000/api/Product", formData)
+          .subscribe(res => console.log(res));
+
+      }
+    });
+  }
 
 }

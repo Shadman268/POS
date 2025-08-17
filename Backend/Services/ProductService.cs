@@ -22,12 +22,11 @@ namespace Backend.Services
             return _mapper.Map<IEnumerable<ProductDto>>(products);
         }
 
-        public async Task<ProductDto> CreateProductAsync(ProductDto productDto)
+        public async Task<Product> CreateProductAsync(Product product)
         {
-            var product = _mapper.Map<Product>(productDto);
-            var createdProduct = await _repository.CreateProductAsync(product);
-            return _mapper.Map<ProductDto>(createdProduct);
+            return await _repository.CreateProductAsync(product);
         }
+
 
     }
 }

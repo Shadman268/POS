@@ -1,4 +1,4 @@
 export interface PriceUnit {
-  amount : string;
+  amount: string;
   viewAmount: string;
-}
+}   

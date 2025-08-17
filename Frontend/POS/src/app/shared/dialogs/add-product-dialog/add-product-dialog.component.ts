@@ -1,18 +1,19 @@
 import { Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
+import { ProductData } from 'src/app/core/models/product-data';
 
 @Component({
   selector: 'app-add-product-dialog',
   templateUrl: './add-product-dialog.component.html',
   styleUrls: ['./add-product-dialog.component.scss']
 })
-export class AddProductDialogComponent  {
+export class AddProductDialogComponent {
 
   productName: string = '';
-  price: number | null = null;
+  price: string = '';
   image: File | null = null;
 
-  constructor(public dialogRef: MatDialogRef<AddProductDialogComponent>) {}
+  constructor(public dialogRef: MatDialogRef<AddProductDialogComponent>) { }
 
   onImageSelected(event: any) {
     const file = event.target.files[0];
@@ -21,9 +22,9 @@ export class AddProductDialogComponent  {
     }
   }
 
-onSubmit() {
-    const productData = {
-      name: this.productName,
+  onSubmit() {
+    const productData: ProductData = {
+      productName: this.productName,
       price: this.price,
       image: this.image
     };
