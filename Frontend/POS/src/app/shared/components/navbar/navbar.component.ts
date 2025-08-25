@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { AddProductDialogComponent } from '../../dialogs/add-product-dialog/add-product-dialog.component';
-import { ProductData } from 'src/app/core/models/product-data';
+import { ProductUpload } from 'src/app/core/models/product-data';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
@@ -22,7 +22,7 @@ export class NavbarComponent implements OnInit {
       height: '330px'
     });
 
-    dialogRef.afterClosed().subscribe((result: ProductData) => {
+    dialogRef.afterClosed().subscribe((result: ProductUpload) => {
       if (result) {
         console.log('Product Data:', result);
         const formData = new FormData();

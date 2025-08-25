@@ -1,1 +1,15 @@
-<label class="label"></label>
+<mat-grid-list cols="3" rowHeight="300px" gutterSize="16px">
+    <mat-grid-tile *ngFor="let product of products">
+        <div class="product-card">
+            <!-- Product Image -->
+            <img [src]="'http://localhost:5000/' + product.imagePath" alt="{{ product.productName }}"
+                class="product-image">
+
+            <!-- Name + Price -->
+            <div class="product-info">
+                <span class="name">{{ product.productName }}</span>
+                <span class="price">{{ product.price }}</span>
+            </div>
+        </div>
+    </mat-grid-tile>
+</mat-grid-list>

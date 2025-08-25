@@ -5,6 +5,7 @@ using Backend.Repositories.Interfaces;
 using Backend.Services;
 using Backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,11 +42,15 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Uploads")),
+    RequestPath = "/Uploads"
+});
+
 app.UseSwagger();
 app.UseSwaggerUI();
-
-
-//app.UseHttpsRedirection();
 
 app.UseRouting();
 

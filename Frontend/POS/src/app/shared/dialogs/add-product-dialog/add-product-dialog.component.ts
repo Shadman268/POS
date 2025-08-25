@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { ProductData } from 'src/app/core/models/product-data';
+import { ProductUpload } from 'src/app/core/models/product-data';
 
 @Component({
   selector: 'app-add-product-dialog',
@@ -23,7 +23,7 @@ export class AddProductDialogComponent {
   }
 
   onSubmit() {
-    const productData: ProductData = {
+    const productData: ProductUpload = {
       productName: this.productName,
       price: this.price,
       image: this.image

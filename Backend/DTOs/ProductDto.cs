@@ -1,4 +1,6 @@
-﻿namespace Backend.DTOs
+﻿using System.Text.Json.Serialization;
+
+namespace Backend.DTOs
 {
     public class ProductDto
     {
@@ -6,6 +8,7 @@
         public required string ProductName { get; set; }
         public decimal Price { get; set; }
         // For upload
+        [JsonIgnore]
         public IFormFile? Image { get; set; }
 
         // For response
