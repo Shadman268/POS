@@ -1,5 +1,5 @@
-<mat-grid-list cols="3" rowHeight="300px" gutterSize="16px">
-    <mat-grid-tile *ngFor="let product of products">
+<mat-grid-list cols="8" rowHeight="150px" gutterSize="6px">
+    <mat-grid-tile *ngFor="let product of this.productService.allProducts">
         <div class="product-card">
             <!-- Product Image -->
             <img [src]="'http://localhost:5000/' + product.imagePath" alt="{{ product.productName }}"

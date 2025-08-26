@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { AddProductDialogComponent } from '../../dialogs/add-product-dialog/add-product-dialog.component';
-import { ProductUpload } from 'src/app/core/models/product-data';
+import { ProductUpload, ProductView } from 'src/app/core/models/product-data';
 import { HttpClient } from '@angular/common/http';
+import { ProductService } from '../../services/product.service';
 
 @Component({
   selector: 'app-navbar',
@@ -11,7 +12,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class NavbarComponent implements OnInit {
 
-  constructor(private dialog: MatDialog, private http: HttpClient) { }
+  constructor(private dialog: MatDialog, private http: HttpClient, private productService: ProductService) { }
 
   ngOnInit(): void {
   }
@@ -32,9 +33,15 @@ export class NavbarComponent implements OnInit {
           formData.append("image", result.image); // actual File object
         }
 
-        this.http.post("http://localhost:5000/api/Product", formData)
-          .subscribe(res => console.log(res));
-
+        this.http.post<ProductView>("http://localhost:5000/api/Product", formData)
+          .subscribe({
+            next: (res: ProductView) => {
+              this.productService.allProducts.push(res);
+            },
+            error: (err) => {
+              console.error("Error creating product:", err);
+            }
+          });
       }
     });
   }

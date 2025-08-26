@@ -5,6 +5,7 @@ export interface ProductUpload {
 }
 
 export interface ProductView {
+    id: number,
     productName: string;
     price: string;
     imagePath: string;
