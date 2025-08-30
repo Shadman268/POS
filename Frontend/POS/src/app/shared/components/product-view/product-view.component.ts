@@ -23,4 +23,8 @@ export class ProductViewComponent implements OnInit {
 
       });
   }
+
+  selectProduct(product: ProductView): void {
+    this.productService.addProductInReceipt(product);
+  }
 }

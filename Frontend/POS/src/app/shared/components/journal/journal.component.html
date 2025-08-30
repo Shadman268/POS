@@ -4,15 +4,15 @@
             <mat-icon>person</mat-icon>
         </th>
         <th><mat-form-field>
-            <mat-select>
-                <mat-option value="customer1">
-                    Shadman
-                </mat-option>
-                <mat-option value="customer2">
-                    Sakib
-                </mat-option>
-            </mat-select>
-        </mat-form-field></th>
+                <mat-select>
+                    <mat-option value="customer1">
+                        Shadman
+                    </mat-option>
+                    <mat-option value="customer2">
+                        Sakib
+                    </mat-option>
+                </mat-select>
+            </mat-form-field></th>
         <th class="customer-icon">
             <mat-icon color="primary" class="customer-add">person_add</mat-icon>
         </th>
@@ -23,16 +23,13 @@
     <table>
         <th>
             <mat-form-field appearance="fill">
-                <input matInput type="text"
-                [formControl] ="searchControl"
-                [matAutocomplete]="auto"
-                (input)="filterItems()"
-                placeholder="Enter product name/barcode">
+                <input matInput type="text" [formControl]="searchControl" [matAutocomplete]="auto"
+                    (input)="filterItems()" placeholder="Enter product name/barcode">
                 <mat-autocomplete #auto="matAutocomplete">
                     <mat-option *ngFor="let item of filteredItems" [value]="item">
-                      {{ item }}
+                        {{ item }}
                     </mat-option>
-                  </mat-autocomplete>
+                </mat-autocomplete>
             </mat-form-field>
         </th>
         <th>
@@ -48,11 +45,11 @@
         <th class="price-col">Price</th>
         <th class="subtotal-col">Subtotal</th>
         <th class="delete-col"><mat-icon class="delete-icon">delete</mat-icon></th>
-        <tr>
-            <td class="item-col">kola</td>
-            <td class="qty-col">2</td>
-            <td class="price-col">40</td>
-            <td class="subtotal-col">80</td>
+        <tr *ngFor="let item of this.productService.receiptItems">
+            <td class="item-col">{{item.productName}}</td>
+            <td class="qty-col">1</td>
+            <td class="price-col">{{item.price}}</td>
+            <td class="subtotal-col">{{item.price}}</td>
             <td class="delete-col-item"><mat-icon class="delete-icon">close</mat-icon></td>
         </tr>
     </table>
@@ -70,8 +67,9 @@
                 Discount</mat-checkbox>
             <mat-form-field *ngIf="applyDiscount" class="discount-form">
                 <input #discountInput matInput type="number" placeholder="Enter Discount" class="discount-input"
-                (input)="updatePrice(+discountInput.value, selectedUnit); ">
-                <mat-select [(ngModel)]="selectedUnit" (selectionChange)="updatePrice(+discountInput.value, selectedUnit)" class="unit-select">
+                    (input)="updatePrice(+discountInput.value, selectedUnit); ">
+                <mat-select [(ngModel)]="selectedUnit"
+                    (selectionChange)="updatePrice(+discountInput.value, selectedUnit)" class="unit-select">
                     <mat-option *ngFor="let unit of priceUnit" [value]="unit.amount">
                         {{unit.viewAmount}}
                     </mat-option>
@@ -88,8 +86,8 @@
     <div class="cash">
         <mat-label>Cash Received</mat-label>
         <mat-form-field class="cash-form">
-            <input #received matInput type="number" style="text-align: right;" 
-            (input)="applyDiscount ? updateChangeAmount(+received.value, +(discountInput.nativeElement.value) , selectedUnit) : updateChangeAmount(+received.value)">
+            <input #received matInput type="number" style="text-align: right;"
+                (input)="applyDiscount ? updateChangeAmount(+received.value, +(discountInput.nativeElement.value) , selectedUnit) : updateChangeAmount(+received.value)">
         </mat-form-field>
     </div>
     <div class="change">

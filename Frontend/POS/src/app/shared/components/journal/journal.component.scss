@@ -20,7 +20,7 @@
     margin-top: 0.5vw;
     align-items: center;
 }
-  
+
 .discount-form {
     display: flex;
     align-items: center;
@@ -66,7 +66,7 @@
 
 .customer {
     margin-bottom: auto;
-    margin-left: auto; 
+    margin-left: auto;
     margin-right: auto;
 }
 
@@ -82,16 +82,18 @@
 
 .search {
     display: flex;
-    margin-left: auto; 
+    margin-left: auto;
     margin-right: auto;
 }
 
 .item-list {
     display: flex;
     flex-grow: 1;
-    margin-left: auto; 
+    margin-left: auto;
     margin-right: auto;
-    background-color:whitesmoke;
+    background-color: whitesmoke;
+    overflow: auto;
+    height: 260px;
 }
 
 .list-header {
@@ -110,14 +112,16 @@
     overflow-wrap: break-word;
 }
 
-.qty-col, .price-col, .subtotal-col {
+.qty-col,
+.price-col,
+.subtotal-col {
     width: 15%;
     vertical-align: middle;
     border: 1px solid black;
 }
 
 .delete-col {
-    width:5%;
+    width: 5%;
     color: red;
 }
 

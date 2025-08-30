@@ -2,6 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { PriceUnit } from 'src/app/core/models/price-unit';
 import { FormControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { ProductService } from '../../services/product.service';
 
 @Component({
   selector: 'app-journal',
@@ -30,13 +31,13 @@ export class JournalComponent implements OnInit {
   filteredItems: string[] = [];
   selectedItems: string[] = [];
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, protected productService: ProductService) {
     this.filteredItems = [];
   }
 
   ngOnInit(): void {
     this.http.get("http://localhost:5000/api/product")
-  .subscribe(res => console.log(res));
+      .subscribe(res => console.log(res));
   }
 
   filterItems(): void {

@@ -8,5 +8,11 @@ export class ProductService {
 
   allProducts: ProductView[] = [];
 
+  receiptItems: ProductView[] = [];
+
   constructor() { }
+
+  addProductInReceipt(product: ProductView): void {
+    this.receiptItems.push(product);
+  }
 }
