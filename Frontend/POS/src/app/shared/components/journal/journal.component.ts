@@ -59,6 +59,14 @@ export class JournalComponent implements OnInit {
     }
   }
 
+  getTotal(): number {
+    let total = 0;
+    this.productService.receiptItems.forEach(item => {
+      total = total + +item.price;
+    })
+    return total;
+  }
+
   updatePrice(discount: number, unit: string): void {
     if (unit === 'BDT') {
       this.priceAfterDiscount = this.priceInBdtDiscount(1900, discount);
