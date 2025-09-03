@@ -40,18 +40,24 @@
 
 <div class="item-list">
     <table class="list-header">
-        <th class="item-col">Item</th>
-        <th class="qty-col">Qty</th>
-        <th class="price-col">Price</th>
-        <th class="subtotal-col">Subtotal</th>
-        <th class="delete-col"><mat-icon class="delete-icon">delete</mat-icon></th>
-        <tr *ngFor="let item of this.productService.receiptItems">
-            <td class="item-col">{{item.productName}}</td>
-            <td class="qty-col">1</td>
-            <td class="price-col">{{item.price}}</td>
-            <td class="subtotal-col">{{item.price}}</td>
-            <td class="delete-col-item"><mat-icon class="delete-icon">close</mat-icon></td>
-        </tr>
+        <thead>
+            <tr>
+                <th class="item-col">Item</th>
+                <th class="qty-col">Qty</th>
+                <th class="price-col">Price</th>
+                <th class="subtotal-col">Subtotal</th>
+                <th class="delete-col"><mat-icon class="delete-icon">delete</mat-icon></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let item of this.productService.receiptItems">
+                <td class="item-col">{{item.productName}}</td>
+                <td class="qty-col">1</td>
+                <td class="price-col">{{item.price}}</td>
+                <td class="subtotal-col">{{item.price}}</td>
+                <td class="delete-col-item"><mat-icon class="delete-icon">close</mat-icon></td>
+            </tr>
+        </tbody>
     </table>
 </div>
 
