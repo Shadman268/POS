@@ -12,15 +12,18 @@ export class ProductViewComponent implements OnInit {
 
   public products: ProductView[] = [];
 
-  constructor(private http: HttpClient, protected productService: ProductService) { }
+  constructor(
+    private http: HttpClient,
+    protected productService: ProductService
+  ) { }
 
   ngOnInit(): void {
+    // Load initial products
     this.http.get<ProductView[]>("http://localhost:5000/api/Product")
       .subscribe(data => {
         this.products = data;
         console.log("Products:", this.products);
         this.productService.allProducts = [...this.products];
-
       });
   }
 

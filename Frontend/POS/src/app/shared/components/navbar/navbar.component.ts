@@ -30,13 +30,13 @@ export class NavbarComponent implements OnInit {
         formData.append("productName", result.productName);
         formData.append("price", result.price.toString());
         if (result.image) {
-          formData.append("image", result.image); // actual File object
+          formData.append("image", result.image);
         }
 
         this.http.post<ProductView>("http://localhost:5000/api/Product", formData)
           .subscribe({
             next: (res: ProductView) => {
-              this.productService.allProducts.push(res);
+              // No need to manually push to allProducts - SignalR will handle it
             },
             error: (err) => {
               console.error("Error creating product:", err);

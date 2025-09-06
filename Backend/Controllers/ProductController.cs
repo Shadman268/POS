@@ -2,20 +2,24 @@
 using Backend.Models;
 using Backend.Services;
 using Backend.Services.Interfaces;
+using Backend.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using System;
 
 namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductController: ControllerBase
+    public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly IHubContext<ProductHub> _hubContext;
 
-        public ProductController(IProductService service)
+        public ProductController(IProductService service, IHubContext<ProductHub> hubContext)
         {
             _productService = service;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -57,6 +61,9 @@ namespace Backend.Controllers
 
             // Save entity (with ImagePath) in DB
             var createdProduct = await _productService.CreateProductAsync(product);
+
+            // Broadcast the new product to all connected clients
+            await _hubContext.Clients.All.SendAsync("ProductAdded", createdProduct);
 
             return CreatedAtAction(nameof(GetAllProducts), new { id = createdProduct.Id }, createdProduct);
         }

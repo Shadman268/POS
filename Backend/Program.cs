@@ -4,6 +4,7 @@ using Backend.Repositories;
 using Backend.Repositories.Interfaces;
 using Backend.Services;
 using Backend.Services.Interfaces;
+using Backend.Hubs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
@@ -20,6 +21,9 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
+// Add SignalR
+builder.Services.AddSignalR();
+
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -30,7 +34,8 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins("http://localhost:4200", "http://127.0.0.1:4200")
                   .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                  .AllowCredentials(); // Required for SignalR
         });
 });
 
@@ -59,5 +64,8 @@ app.UseCors(MyAllowSpecificOrigins);
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Map SignalR hub
+app.MapHub<ProductHub>("/productHub");
 
 app.Run();
