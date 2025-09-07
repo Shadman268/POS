@@ -36,7 +36,6 @@ namespace Backend.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Map DTO to entity
             var product = new Product
             {
                 ProductName = productDto.ProductName,

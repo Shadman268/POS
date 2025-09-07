@@ -93,7 +93,7 @@
         <mat-label>Cash Received</mat-label>
         <mat-form-field class="cash-form">
             <input #received matInput type="number" style="text-align: right;"
-                (input)="applyDiscount ? updateChangeAmount(+received.value, +(discountInput.nativeElement.value) , selectedUnit) : updateChangeAmount(+received.value)">
+                (input)="updateChangeAmount(+received.value)">
         </mat-form-field>
     </div>
     <div class="change">

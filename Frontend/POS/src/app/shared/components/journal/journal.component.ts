@@ -68,16 +68,17 @@ export class JournalComponent implements OnInit {
   }
 
   updatePrice(discount: number, unit: string): void {
+    const total = this.getTotal();
     if (unit === 'BDT') {
-      this.priceAfterDiscount = this.priceInBdtDiscount(1900, discount);
+      this.priceAfterDiscount = this.priceInBdtDiscount(total, discount);
     }
     else {
-      this.priceAfterDiscount = this.priceInPercentageDiscount(1900, discount);
+      this.priceAfterDiscount = this.priceInPercentageDiscount(total, discount);
     }
   }
 
   priceInPercentageDiscount(total: number, discount: number): number {
-    return total - (total * (discount / 100))
+    return total - (total * (discount / 100));
   }
 
   priceInBdtDiscount(total: number, discount: number): number {
@@ -85,18 +86,11 @@ export class JournalComponent implements OnInit {
   }
 
   updateChangeAmount(received: number, discount?: number, unit?: string): void {
-    // if(unit && discount) {
-    //   if(unit === 'BDT'){
-    //     this.changeAmount = received - this.priceInBdtDiscount(1900, discount);
-    //   }
-    //   else {
-    //     this.changeAmount = received - this.priceInPercentageDiscount(1900, discount);
-    //   }
-    // } 
-    // else {
-    //   this.changeAmount = received - 1900;
-    // }
-    this.changeAmount = received - this.priceAfterDiscount;
+    if (this.applyDiscount) {
+      this.changeAmount = received - this.priceAfterDiscount;
+    } else {
+      this.changeAmount = received - this.getTotal();
+    }
   }
 
 }
