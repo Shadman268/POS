@@ -3,6 +3,8 @@ import { PriceUnit } from 'src/app/core/models/price-unit';
 import { FormControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ProductService } from '../../services/product.service';
+import { ReceiptService } from '../../services/receipt.service';
+import { ReceiptData, ReceiptItemData } from '../../../core/models/receipt';
 
 @Component({
   selector: 'app-journal',
@@ -31,7 +33,7 @@ export class JournalComponent implements OnInit {
   filteredItems: string[] = [];
   selectedItems: string[] = [];
 
-  constructor(private http: HttpClient, protected productService: ProductService) {
+  constructor(private http: HttpClient, protected productService: ProductService, private receiptService: ReceiptService) {
     this.filteredItems = [];
   }
 
@@ -91,6 +93,55 @@ export class JournalComponent implements OnInit {
     } else {
       this.changeAmount = received - this.getTotal();
     }
+  }
+
+  processPayment(): void {
+    const customerName = 'Walk-in Customer';
+
+    // Convert receipt items to the format expected by backend
+    const receiptItems: ReceiptItemData[] = this.productService.receiptItems.map(item => ({
+      productId: item.id || 0, // Assuming your ProductService items have productId
+      productName: item.productName,
+      quantity: 1, // Currently hardcoded to 1
+      price: +item.price,
+      subtotal: +item.price
+    }));
+
+    const total = this.getTotal();
+    const finalPrice = this.applyDiscount ? this.priceAfterDiscount : total;
+
+    const receiptData: ReceiptData = {
+      customerName: customerName,
+      total: total,
+      discountValue: this.applyDiscount ? +(document.querySelector('.discount-input') as HTMLInputElement)?.value || 0 : 0,
+      discountUnit: this.applyDiscount ? this.selectedUnit : '',
+      priceAfterDiscount: finalPrice,
+      cashReceived: +(document.querySelector('.cash-form input') as HTMLInputElement)?.value || 0,
+      changeAmount: this.changeAmount,
+      items: receiptItems
+    };
+
+    this.receiptService.createReceipt(receiptData).subscribe({
+      next: (response) => {
+        console.log('Receipt created successfully:', response);
+        this.clearReceipt();
+      },
+      error: (error) => {
+        console.error('Error creating receipt:', error);
+      }
+    });
+  }
+
+  clearReceipt(): void {
+    this.productService.receiptItems = [];
+    this.applyDiscount = false;
+    this.priceAfterDiscount = 0;
+    this.changeAmount = 0;
+
+    const discountInput = document.querySelector('.discount-input') as HTMLInputElement;
+    const cashInput = document.querySelector('.cash-form input') as HTMLInputElement;
+    if (discountInput) discountInput.value = '';
+    if (cashInput) cashInput.value = '';
   }
 
 }

@@ -22,7 +22,6 @@ export class ProductViewComponent implements OnInit {
     this.http.get<ProductView[]>("http://localhost:5003/api/Product")
       .subscribe(data => {
         this.products = data;
-        console.log("Products:", this.products);
         this.productService.allProducts = [...this.products];
       });
   }
