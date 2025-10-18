@@ -19,7 +19,7 @@ export class ProductViewComponent implements OnInit {
 
   ngOnInit(): void {
     // Load initial products
-    this.http.get<ProductView[]>("http://localhost:5000/api/Product")
+    this.http.get<ProductView[]>("http://localhost:5003/api/Product")
       .subscribe(data => {
         this.products = data;
         console.log("Products:", this.products);

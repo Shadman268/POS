@@ -33,7 +33,7 @@ export class NavbarComponent implements OnInit {
           formData.append("image", result.image);
         }
 
-        this.http.post<ProductView>("http://localhost:5000/api/Product", formData)
+        this.http.post<ProductView>("http://localhost:5003/api/Product", formData)
           .subscribe({
             next: (res: ProductView) => {
               // No need to manually push to allProducts - SignalR will handle it

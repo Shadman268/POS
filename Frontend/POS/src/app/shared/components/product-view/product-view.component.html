@@ -1,7 +1,7 @@
 <mat-grid-list cols="8" rowHeight="140px" gutterSize="6px">
     <mat-grid-tile *ngFor="let product of this.productService.allProducts" (click)="selectProduct(product)">
         <div class="product-card">
-            <img [src]="'http://localhost:5000/' + product.imagePath" alt="{{ product.productName }}"
+            <img [src]="'http://localhost:5003/' + product.imagePath" alt="{{ product.productName }}"
                 class="product-image">
             <span class="name">{{ product.productName }}</span>
             <span class="price">{{ product.price }}</span>

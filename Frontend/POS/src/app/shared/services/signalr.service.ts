@@ -20,7 +20,7 @@ export class SignalrService implements OnDestroy {
 
     private createConnection() {
         this.hubConnection = new HubConnectionBuilder()
-            .withUrl('http://localhost:5000/productHub')
+            .withUrl('http://localhost:5003/productHub')
             .build();
     }
 

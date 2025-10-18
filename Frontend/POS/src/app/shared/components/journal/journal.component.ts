@@ -36,7 +36,7 @@ export class JournalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.http.get("http://localhost:5000/api/product")
+    this.http.get("http://localhost:5003/api/product")
       .subscribe(res => console.log(res));
   }
 
