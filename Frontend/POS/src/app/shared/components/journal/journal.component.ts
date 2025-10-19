@@ -15,6 +15,7 @@ import { ReceiptData, ReceiptItemData } from '../../../core/models/receipt';
 export class JournalComponent implements OnInit {
 
   @ViewChild('discountInput') discountInput!: ElementRef;
+  @ViewChild('received') cashReceived!: ElementRef;
 
   applyDiscount: boolean = false;
 
@@ -113,10 +114,10 @@ export class JournalComponent implements OnInit {
     const receiptData: ReceiptData = {
       customerName: customerName,
       total: total,
-      discountValue: this.applyDiscount ? +(document.querySelector('.discount-input') as HTMLInputElement)?.value || 0 : 0,
+      discountValue: this.applyDiscount ? +(this.discountInput?.nativeElement?.value || 0) : 0,
       discountUnit: this.applyDiscount ? this.selectedUnit : '',
       priceAfterDiscount: finalPrice,
-      cashReceived: +(document.querySelector('.cash-form input') as HTMLInputElement)?.value || 0,
+      cashReceived: +(this.cashReceived?.nativeElement?.value || 0),
       changeAmount: this.changeAmount,
       items: receiptItems
     };
@@ -138,10 +139,8 @@ export class JournalComponent implements OnInit {
     this.priceAfterDiscount = 0;
     this.changeAmount = 0;
 
-    const discountInput = document.querySelector('.discount-input') as HTMLInputElement;
-    const cashInput = document.querySelector('.cash-form input') as HTMLInputElement;
-    if (discountInput) discountInput.value = '';
-    if (cashInput) cashInput.value = '';
+    if (this.discountInput) this.discountInput.nativeElement.value = '';
+    if (this.cashReceived) this.cashReceived.nativeElement.value = '';
   }
 
 }
