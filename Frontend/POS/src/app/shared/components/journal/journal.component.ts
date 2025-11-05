@@ -4,6 +4,7 @@ import { FormControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ProductService } from '../../services/product.service';
 import { ReceiptService } from '../../services/receipt.service';
+import { ReceiptPdfService } from '../../services/receipt-pdf.service';
 import { ReceiptData, ReceiptItemData } from '../../../core/models/receipt';
 
 @Component({
@@ -34,7 +35,12 @@ export class JournalComponent implements OnInit {
   filteredItems: string[] = [];
   selectedItems: string[] = [];
 
-  constructor(private http: HttpClient, protected productService: ProductService, private receiptService: ReceiptService) {
+  constructor(
+    private http: HttpClient,
+    protected productService: ProductService,
+    private receiptService: ReceiptService,
+    private receiptPdfService: ReceiptPdfService
+  ) {
     this.filteredItems = [];
   }
 
@@ -125,7 +131,11 @@ export class JournalComponent implements OnInit {
     this.receiptService.createReceipt(receiptData).subscribe({
       next: (response) => {
         console.log('Receipt created successfully:', response);
-        this.clearReceipt();
+        // Show receipt preview dialog
+        this.receiptPdfService.showReceiptPreview(response || receiptData).subscribe(result => {
+          // Dialog closed (either after printing or clicking close)
+          this.clearReceipt();
+        });
       },
       error: (error) => {
         console.error('Error creating receipt:', error);

@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { ReceiptPreviewComponent } from './shared/components/receipt-preview/receipt-preview.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -26,6 +27,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 
 @NgModule({
   declarations: [
+    ReceiptPreviewComponent,
     AppComponent,
     PosUiComponent,
     JournalComponent,

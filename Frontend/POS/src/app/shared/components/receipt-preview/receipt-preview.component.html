@@ -1,0 +1,78 @@
+<div class="receipt-preview">
+    <h2 mat-dialog-title>Receipt Preview</h2>
+
+    <mat-dialog-content>
+        <div class="receipt-content">
+            <div class="store-info">
+                <h1>YOUR STORE NAME</h1>
+                <p>123 Store Street, City, Country</p>
+                <p>Phone: +123 456 7890</p>
+            </div>
+
+            <div class="receipt-details">
+                <p><strong>Date:</strong> {{currentDate | date:'medium'}}</p>
+                <p><strong>Receipt #:</strong> {{receipt.id || 'NEW'}}</p>
+                <p><strong>Customer:</strong> {{receipt.customerName}}</p>
+            </div>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of receipt.items">
+                        <td>{{item.productName}}</td>
+                        <td class="text-center">{{item.quantity}}</td>
+                        <td class="text-right">{{item.price | number:'1.2-2'}}</td>
+                        <td class="text-right">{{item.subtotal | number:'1.2-2'}}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="totals">
+                <div class="total-line">
+                    <span>Subtotal:</span>
+                    <span>{{receipt.total | number:'1.2-2'}}</span>
+                </div>
+
+                <ng-container *ngIf="receipt.discountValue > 0">
+                    <div class="total-line">
+                        <span>Discount ({{receipt.discountUnit}}):</span>
+                        <span>{{receipt.discountValue}}</span>
+                    </div>
+                    <div class="total-line">
+                        <span>After Discount:</span>
+                        <span>{{receipt.priceAfterDiscount | number:'1.2-2'}}</span>
+                    </div>
+                </ng-container>
+
+                <div class="total-line">
+                    <span>Cash Received:</span>
+                    <span>{{receipt.cashReceived | number:'1.2-2'}}</span>
+                </div>
+
+                <div class="total-line">
+                    <span>Change:</span>
+                    <span>{{receipt.changeAmount | number:'1.2-2'}}</span>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>Thank you for shopping with us!</p>
+                <p>Please come again</p>
+            </div>
+        </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-button (click)="dialogRef.close()">Close</button>
+        <button mat-raised-button color="primary" (click)="downloadPdf()">
+            Download Receipt
+        </button>
+    </mat-dialog-actions>
+</div>
