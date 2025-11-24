@@ -70,8 +70,9 @@ export class JournalComponent implements OnInit {
 
   getTotal(): number {
     let total = 0;
-    this.productService.receiptItems.forEach(item => {
-      total = total + +item.price;
+    this.productService.receiptItems.forEach((item, index) => {
+      const quantity = this.getItemQuantity(index);
+      total = total + (+item.price * quantity);
     })
     return total;
   }
@@ -151,6 +152,50 @@ export class JournalComponent implements OnInit {
 
     if (this.discountInput) this.discountInput.nativeElement.value = '';
     if (this.cashReceived) this.cashReceived.nativeElement.value = '';
+  }
+
+  // Add quantity tracking for items
+  itemQuantities: { [key: number]: number } = {};
+
+  getItemQuantity(index: number): number {
+    return this.itemQuantities[index] || 1;
+  }
+
+  increaseQuantity(index: number): void {
+    if (!this.itemQuantities[index]) {
+      this.itemQuantities[index] = 1;
+    }
+    this.itemQuantities[index]++;
+  }
+
+  decreaseQuantity(index: number): void {
+    if (!this.itemQuantities[index]) {
+      this.itemQuantities[index] = 1;
+    }
+    if (this.itemQuantities[index] > 1) {
+      this.itemQuantities[index]--;
+    }
+  }
+
+  getItemSubtotal(index: number): number {
+    const item = this.productService.receiptItems[index];
+    const quantity = this.getItemQuantity(index);
+    return +item.price * quantity;
+  }
+
+  removeItem(index: number): void {
+    this.productService.receiptItems.splice(index, 1);
+    // Reorganize quantity tracking after removal
+    const newQuantities: { [key: number]: number } = {};
+    Object.keys(this.itemQuantities).forEach(key => {
+      const keyNum = +key;
+      if (keyNum < index) {
+        newQuantities[keyNum] = this.itemQuantities[keyNum];
+      } else if (keyNum > index) {
+        newQuantities[keyNum - 1] = this.itemQuantities[keyNum];
+      }
+    });
+    this.itemQuantities = newQuantities;
   }
 
 }

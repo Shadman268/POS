@@ -1,105 +1,135 @@
-<div class="customer">
-    <table class="customer-content">
-        <th class="customer-icon">
-            <mat-icon>person</mat-icon>
-        </th>
-        <th><mat-form-field>
-                <mat-select>
-                    <mat-option value="customer1">
-                        Shadman
-                    </mat-option>
-                    <mat-option value="customer2">
-                        Sakib
-                    </mat-option>
-                </mat-select>
-            </mat-form-field></th>
-        <th class="customer-icon">
-            <mat-icon color="primary" class="customer-add">person_add</mat-icon>
-        </th>
-    </table>
-</div>
-
-<div class="search">
-    <table>
-        <th>
-            <mat-form-field appearance="fill">
-                <input matInput type="text" [formControl]="searchControl" [matAutocomplete]="auto"
-                    (input)="filterItems()" placeholder="Enter product name/barcode">
-                <mat-autocomplete #auto="matAutocomplete">
-                    <mat-option *ngFor="let item of filteredItems" [value]="item">
-                        {{ item }}
-                    </mat-option>
-                </mat-autocomplete>
-            </mat-form-field>
-        </th>
-        <th>
-            <mat-icon color="primary">add_shopping_cart</mat-icon>
-        </th>
-    </table>
-</div>
-
-<div class="item-list">
-    <table class="list-header">
-        <thead>
-            <tr>
-                <th class="item-col">Item</th>
-                <th class="qty-col">Qty</th>
-                <th class="price-col">Price</th>
-                <th class="subtotal-col">Subtotal</th>
-                <th class="delete-col"><mat-icon class="delete-icon">delete</mat-icon></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let item of this.productService.receiptItems">
-                <td class="item-col">{{item.productName}}</td>
-                <td class="qty-col">1</td>
-                <td class="price-col">{{item.price}}</td>
-                <td class="subtotal-col">{{item.price}}</td>
-                <td class="delete-col-item"><mat-icon class="delete-icon">close</mat-icon></td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<mat-card class="mat-elevation-z4">
-    <div class="total">
-        <mat-label>Total</mat-label>
-        <mat-label>{{getTotal()}}</mat-label>
-    </div>
-    <div class="discount">
-        <div class="apply-discount">
-            <mat-checkbox [(ngModel)]="applyDiscount" (change)="onDiscountCheckboxChange()" class="discount-checkbox"
-                color="primary">Apply
-                Discount</mat-checkbox>
-            <mat-form-field *ngIf="applyDiscount" class="discount-form">
-                <input #discountInput matInput type="number" placeholder="Enter Discount" class="discount-input"
-                    (input)="updatePrice(+discountInput.value, selectedUnit); ">
-                <mat-select [(ngModel)]="selectedUnit"
-                    (selectionChange)="updatePrice(+discountInput.value, selectedUnit)" class="unit-select">
-                    <mat-option *ngFor="let unit of priceUnit" [value]="unit.amount">
-                        {{unit.viewAmount}}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
-        </div>
-        <ng-container *ngIf="applyDiscount">
-            <div class="after-discount">
-                <mat-label> After Discount</mat-label>
-                <mat-label> {{priceAfterDiscount}} </mat-label>
+<div class="journal-container">
+    <div class="journal-header">
+        <div class="top-row">
+            <div class="customer-section">
+                <mat-icon class="customer-icon">person</mat-icon>
+                <mat-form-field appearance="outline" class="customer-select">
+                    <mat-select placeholder="Select Customer">
+                        <mat-option value="customer1">
+                            Shadman
+                        </mat-option>
+                        <mat-option value="customer2">
+                            Sakib
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <button mat-icon-button class="add-customer-btn">
+                    <mat-icon color="primary">person_add</mat-icon>
+                </button>
             </div>
-        </ng-container>
-    </div>
-    <div class="cash">
-        <mat-label>Cash Received</mat-label>
-        <mat-form-field class="cash-form">
-            <input #received matInput type="number" style="text-align: right;"
-                (input)="updateChangeAmount(+received.value)">
-        </mat-form-field>
-    </div>
-    <div class="change">
-        <mat-label>Change Amount</mat-label>
-        <mat-label>{{changeAmount}}</mat-label>
-    </div>
-</mat-card>
 
-<button mat-raised-button disableRipple color="primary" class="payment" (click)="processPayment()"> Payment </button>
+            <div class="search-section">
+                <mat-form-field appearance="outline" class="search-field">
+                    <input matInput type="text" [formControl]="searchControl" [matAutocomplete]="auto"
+                        (input)="filterItems()" placeholder="Search products...">
+                    <mat-autocomplete #auto="matAutocomplete">
+                        <mat-option *ngFor="let item of filteredItems" [value]="item">
+                            {{ item }}
+                        </mat-option>
+                    </mat-autocomplete>
+                </mat-form-field>
+                <button mat-icon-button class="search-btn">
+                    <mat-icon color="primary">add_shopping_cart</mat-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="journal-body">
+        <div class="item-list">
+            <div class="table-container">
+                <table class="modern-table">
+                    <thead>
+                        <tr class="header-row">
+                            <th class="product-col">Product</th>
+                            <th class="qty-col">Quantity</th>
+                            <th class="subtotal-col">Subtotal</th>
+                            <th class="action-col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of this.productService.receiptItems; let i = index" class="item-row">
+                            <td class="product-col">
+                                <div class="product-info">
+                                    <span class="product-name">{{item.productName}}</span>
+                                    <span class="product-price">৳{{item.price}} each</span>
+                                </div>
+                            </td>
+                            <td class="qty-col">
+                                <div class="quantity-controls">
+                                    <button mat-icon-button class="qty-btn" (click)="decreaseQuantity(i)">
+                                        <mat-icon>remove</mat-icon>
+                                    </button>
+                                    <span class="qty-display">{{getItemQuantity(i)}}</span>
+                                    <button mat-icon-button class="qty-btn" (click)="increaseQuantity(i)">
+                                        <mat-icon>add</mat-icon>
+                                    </button>
+                                </div>
+                            </td>
+                            <td class="subtotal-col">
+                                <span class="subtotal-amount">৳{{getItemSubtotal(i)}}</span>
+                            </td>
+                            <td class="action-col">
+                                <button mat-icon-button class="delete-btn" (click)="removeItem(i)">
+                                    <mat-icon>delete_outline</mat-icon>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div *ngIf="productService.receiptItems.length === 0" class="empty-state">
+                    <mat-icon class="empty-icon">shopping_cart</mat-icon>
+                    <p>No items in cart</p>
+                    <small>Start adding products to see them here</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="journal-footer">
+        <mat-card class="summary-card mat-elevation-z4">
+            <div class="total">
+                <mat-label>Total</mat-label>
+                <mat-label class="total-amount">৳{{getTotal()}}</mat-label>
+            </div>
+            <div class="discount">
+                <div class="apply-discount">
+                    <mat-checkbox [(ngModel)]="applyDiscount" (change)="onDiscountCheckboxChange()"
+                        class="discount-checkbox" color="primary">Apply Discount</mat-checkbox>
+                    <mat-form-field *ngIf="applyDiscount" class="discount-form">
+                        <input #discountInput matInput type="number" placeholder="Enter Discount" class="discount-input"
+                            (input)="updatePrice(+discountInput.value, selectedUnit); ">
+                        <mat-select [(ngModel)]="selectedUnit"
+                            (selectionChange)="updatePrice(+discountInput.value, selectedUnit)" class="unit-select">
+                            <mat-option *ngFor="let unit of priceUnit" [value]="unit.amount">
+                                {{unit.viewAmount}}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <ng-container *ngIf="applyDiscount">
+                    <div class="after-discount">
+                        <mat-label>After Discount</mat-label>
+                        <mat-label class="discount-amount">৳{{priceAfterDiscount}}</mat-label>
+                    </div>
+                </ng-container>
+            </div>
+            <div class="cash">
+                <mat-label>Cash Received</mat-label>
+                <mat-form-field class="cash-form">
+                    <input #received matInput type="number" style="text-align: right;"
+                        (input)="updateChangeAmount(+received.value)">
+                </mat-form-field>
+            </div>
+            <div class="change">
+                <mat-label>Change Amount</mat-label>
+                <mat-label class="change-amount">৳{{changeAmount}}</mat-label>
+            </div>
+        </mat-card>
+
+        <button mat-raised-button disableRipple color="primary" class="payment-btn" (click)="processPayment()">
+            <mat-icon>payment</mat-icon>
+            Process Payment
+        </button>
+    </div>
+</div>
