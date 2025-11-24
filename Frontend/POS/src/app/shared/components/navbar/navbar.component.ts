@@ -4,6 +4,7 @@ import { AddProductDialogComponent } from '../../dialogs/add-product-dialog/add-
 import { ProductUpload, ProductView } from 'src/app/core/models/product-data';
 import { HttpClient } from '@angular/common/http';
 import { ProductService } from '../../services/product.service';
+import { SidebarService } from '../../services/sidebar.service';
 
 @Component({
   selector: 'app-navbar',
@@ -12,9 +13,18 @@ import { ProductService } from '../../services/product.service';
 })
 export class NavbarComponent implements OnInit {
 
-  constructor(private dialog: MatDialog, private http: HttpClient, private productService: ProductService) { }
+  constructor(
+    private dialog: MatDialog,
+    private http: HttpClient,
+    private productService: ProductService,
+    private sidebarService: SidebarService
+  ) { }
 
   ngOnInit(): void {
+  }
+
+  toggleSidebar() {
+    this.sidebarService.toggle();
   }
 
   addProduct() {

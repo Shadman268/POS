@@ -24,6 +24,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { AddProductDialogComponent } from './shared/dialogs/add-product-dialog/add-product-dialog.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatGridListModule } from '@angular/material/grid-list';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +35,8 @@ import { MatGridListModule } from '@angular/material/grid-list';
     JournalComponent,
     ProductViewComponent,
     NavbarComponent,
-    AddProductDialogComponent
+    AddProductDialogComponent,
+    SidebarComponent
   ],
   imports: [
     BrowserModule,
@@ -54,7 +57,8 @@ import { MatGridListModule } from '@angular/material/grid-list';
     MatMenuModule,
     MatAutocompleteModule,
     MatListModule,
-    MatGridListModule
+    MatGridListModule,
+    MatSidenavModule
   ],
   providers: [],
   bootstrap: [AppComponent]

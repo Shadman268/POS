@@ -1,0 +1,37 @@
+<mat-drawer-container class="sidebar-container" autosize>
+    <mat-drawer #drawer class="sidebar-drawer" mode="over">
+        <div class="sidebar-content">
+            <div class="sidebar-header">
+                <h2>Menu</h2>
+                <button mat-icon-button (click)="drawer.toggle()">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
+            <mat-nav-list>
+                <mat-list-item>
+                    <mat-icon matListItemIcon>dashboard</mat-icon>
+                    <span matListItemTitle>Dashboard</span>
+                </mat-list-item>
+                <mat-list-item>
+                    <mat-icon matListItemIcon>shopping_cart</mat-icon>
+                    <span matListItemTitle>Products</span>
+                </mat-list-item>
+                <mat-list-item>
+                    <mat-icon matListItemIcon>receipt</mat-icon>
+                    <span matListItemTitle>Receipts</span>
+                </mat-list-item>
+                <mat-list-item>
+                    <mat-icon matListItemIcon>archive</mat-icon>
+                    <span matListItemTitle>Archive</span>
+                </mat-list-item>
+                <mat-list-item>
+                    <mat-icon matListItemIcon>settings</mat-icon>
+                    <span matListItemTitle>Settings</span>
+                </mat-list-item>
+            </mat-nav-list>
+        </div>
+    </mat-drawer>
+    <mat-drawer-content>
+        <ng-content></ng-content>
+    </mat-drawer-content>
+</mat-drawer-container>
