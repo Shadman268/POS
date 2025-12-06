@@ -1,97 +1,129 @@
 .payment-btn {
     width: 100%;
-    height: 48px;
-    font-size: 16px;
+    height: 36px;
+    font-size: 13px;
     font-weight: 600;
-    margin-top: 12px;
+    margin-top: 6px;
 
     mat-icon {
-        margin-right: 8px;
+        margin-right: 4px;
+        font-size: 16px;
     }
 }
 
 .summary-card {
     margin-bottom: 0;
+    padding: 6px 10px !important;
 
-    .mat-mdc-card-content {
-        padding: 16px;
+    ::ng-deep .mat-mdc-card-content {
+        padding: 0 !important;
     }
+}
+
+.label {
+    font-size: 12px;
+    color: #4a5568;
+    font-weight: 500;
 }
 
 .total-amount,
 .discount-amount,
 .change-amount {
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 14px;
     color: #2d3748;
 }
 
-.total {
+.total-row {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    font-size: 1.2vw;
-}
-
-.discount {
-    display: flex;
-    flex-direction: column;
-}
-
-.apply-discount {
-    display: flex;
-    font-size: 1.2vw;
-    margin-top: 0.5vw;
     align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 6px;
 }
 
-.discount-form {
+.discount-row {
     display: flex;
+    gap: 8px;
     align-items: center;
-    transform: scale(0.98);
+    margin-bottom: 6px;
 }
 
-.discount-checkbox {
-    margin-right: auto;
-    transform: scale(0.95);
-}
+.discount-input-field {
+    flex: 1;
 
-.discount-input {
-    width: 60%;
+    ::ng-deep .mat-mdc-form-field-wrapper {
+        padding-bottom: 0;
+    }
+
+    ::ng-deep .mat-mdc-form-field-infix {
+        min-height: 30px;
+        padding: 4px 0;
+    }
+
+    ::ng-deep .mdc-notched-outline {
+        border-color: #e2e8f0;
+    }
+
+    ::ng-deep .mat-mdc-form-field-label {
+        font-size: 12px;
+    }
 }
 
 .unit-select {
-    width: 40%;
+    ::ng-deep .mat-mdc-select {
+        font-size: 12px;
+    }
 }
 
-.after-discount {
+.after-discount-display {
     display: flex;
-    justify-content: space-between;
-    font-size: 1.2vw;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 100px;
+    gap: 1px;
 }
 
-.cash {
+.cash-change-row {
     display: flex;
-    justify-content: space-between;
+    gap: 8px;
     align-items: center;
-    font-size: 1.2vw;
 }
 
-.cash-form {
-    transform: scale(0.98);
+.cash-field {
+    flex: 1;
+
+    ::ng-deep .mat-mdc-form-field-wrapper {
+        padding-bottom: 0;
+    }
+
+    ::ng-deep .mat-mdc-form-field-infix {
+        min-height: 30px;
+        padding: 4px 0;
+    }
+
+    ::ng-deep .mdc-notched-outline {
+        border-color: #e2e8f0;
+    }
+
+    ::ng-deep .mat-mdc-form-field-label {
+        font-size: 12px;
+    }
 }
 
-.change {
+.change-display {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 1.2vw;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 100px;
+    gap: 1px;
 }
 
 .journal-container {
     display: flex;
     flex-direction: column;
     height: 100%;
-    max-height: 100vh;
     overflow: hidden;
 }
 
@@ -111,7 +143,7 @@
 
 .journal-footer {
     flex-shrink: 0;
-    padding: 12px;
+    padding: 8px 12px;
     background: #ffffff;
     border-top: 1px solid #e2e8f0;
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);

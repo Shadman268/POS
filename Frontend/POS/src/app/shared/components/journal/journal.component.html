@@ -88,42 +88,41 @@
 
     <div class="journal-footer">
         <mat-card class="summary-card mat-elevation-z4">
-            <div class="total">
-                <mat-label>Total</mat-label>
+            <!-- Line 1: Total -->
+            <div class="total-row">
+                <mat-label class="label">Total</mat-label>
                 <mat-label class="total-amount">৳{{getTotal()}}</mat-label>
             </div>
-            <div class="discount">
-                <div class="apply-discount">
-                    <mat-checkbox [(ngModel)]="applyDiscount" (change)="onDiscountCheckboxChange()"
-                        class="discount-checkbox" color="primary">Apply Discount</mat-checkbox>
-                    <mat-form-field *ngIf="applyDiscount" class="discount-form">
-                        <input #discountInput matInput type="number" placeholder="Enter Discount" class="discount-input"
-                            (input)="updatePrice(+discountInput.value, selectedUnit); ">
-                        <mat-select [(ngModel)]="selectedUnit"
-                            (selectionChange)="updatePrice(+discountInput.value, selectedUnit)" class="unit-select">
-                            <mat-option *ngFor="let unit of priceUnit" [value]="unit.amount">
-                                {{unit.viewAmount}}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
-                </div>
-                <ng-container *ngIf="applyDiscount">
-                    <div class="after-discount">
-                        <mat-label>After Discount</mat-label>
-                        <mat-label class="discount-amount">৳{{priceAfterDiscount}}</mat-label>
-                    </div>
-                </ng-container>
-            </div>
-            <div class="cash">
-                <mat-label>Cash Received</mat-label>
-                <mat-form-field class="cash-form">
-                    <input #received matInput type="number" style="text-align: right;"
-                        (input)="updateChangeAmount(+received.value)">
+
+            <!-- Line 2: Discount -->
+            <div class="discount-row">
+                <mat-form-field appearance="outline" class="discount-input-field">
+                    <mat-label>Discount</mat-label>
+                    <input #discountInput matInput type="number" placeholder="0"
+                        (input)="updatePrice(+discountInput.value, selectedUnit)">
+                    <mat-select [(ngModel)]="selectedUnit" matSuffix
+                        (selectionChange)="updatePrice(+discountInput.value, selectedUnit)" class="unit-select">
+                        <mat-option *ngFor="let unit of priceUnit" [value]="unit.amount">
+                            {{unit.viewAmount}}
+                        </mat-option>
+                    </mat-select>
                 </mat-form-field>
+                <div class="after-discount-display">
+                    <mat-label class="label">After Discount</mat-label>
+                    <mat-label class="discount-amount">৳{{priceAfterDiscount || getTotal()}}</mat-label>
+                </div>
             </div>
-            <div class="change">
-                <mat-label>Change Amount</mat-label>
-                <mat-label class="change-amount">৳{{changeAmount}}</mat-label>
+
+            <!-- Line 3: Cash & Change -->
+            <div class="cash-change-row">
+                <mat-form-field appearance="outline" class="cash-field">
+                    <mat-label>Cash Received</mat-label>
+                    <input #received matInput type="number" (input)="updateChangeAmount(+received.value)">
+                </mat-form-field>
+                <div class="change-display">
+                    <mat-label class="label">Change</mat-label>
+                    <mat-label class="change-amount">৳{{changeAmount}}</mat-label>
+                </div>
             </div>
         </mat-card>
 

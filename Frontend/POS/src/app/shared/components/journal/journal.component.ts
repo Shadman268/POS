@@ -79,11 +79,14 @@ export class JournalComponent implements OnInit {
 
   updatePrice(discount: number, unit: string): void {
     const total = this.getTotal();
-    if (unit === 'BDT') {
-      this.priceAfterDiscount = this.priceInBdtDiscount(total, discount);
-    }
-    else {
-      this.priceAfterDiscount = this.priceInPercentageDiscount(total, discount);
+    if (discount && discount > 0) {
+      if (unit === 'BDT') {
+        this.priceAfterDiscount = this.priceInBdtDiscount(total, discount);
+      } else {
+        this.priceAfterDiscount = this.priceInPercentageDiscount(total, discount);
+      }
+    } else {
+      this.priceAfterDiscount = 0;
     }
   }
 
@@ -96,11 +99,8 @@ export class JournalComponent implements OnInit {
   }
 
   updateChangeAmount(received: number, discount?: number, unit?: string): void {
-    if (this.applyDiscount) {
-      this.changeAmount = received - this.priceAfterDiscount;
-    } else {
-      this.changeAmount = received - this.getTotal();
-    }
+    const finalPrice = this.priceAfterDiscount > 0 ? this.priceAfterDiscount : this.getTotal();
+    this.changeAmount = received - finalPrice;
   }
 
   processPayment(): void {
@@ -116,13 +116,15 @@ export class JournalComponent implements OnInit {
     }));
 
     const total = this.getTotal();
-    const finalPrice = this.applyDiscount ? this.priceAfterDiscount : total;
+    const discountValue = +(this.discountInput?.nativeElement?.value || 0);
+    const hasDiscount = discountValue > 0;
+    const finalPrice = hasDiscount && this.priceAfterDiscount > 0 ? this.priceAfterDiscount : total;
 
     const receiptData: ReceiptData = {
       customerName: customerName,
       total: total,
-      discountValue: this.applyDiscount ? +(this.discountInput?.nativeElement?.value || 0) : 0,
-      discountUnit: this.applyDiscount ? this.selectedUnit : '',
+      discountValue: hasDiscount ? discountValue : 0,
+      discountUnit: hasDiscount ? this.selectedUnit : '',
       priceAfterDiscount: finalPrice,
       cashReceived: +(this.cashReceived?.nativeElement?.value || 0),
       changeAmount: this.changeAmount,
@@ -146,7 +148,6 @@ export class JournalComponent implements OnInit {
 
   clearReceipt(): void {
     this.productService.receiptItems = [];
-    this.applyDiscount = false;
     this.priceAfterDiscount = 0;
     this.changeAmount = 0;
 
