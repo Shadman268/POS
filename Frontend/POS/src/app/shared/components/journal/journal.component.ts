@@ -45,8 +45,7 @@ export class JournalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.http.get("http://localhost:5003/api/product")
-      .subscribe(res => console.log(res));
+    // Products are already loaded by ProductService from product-view component
   }
 
   filterItems(): void {
