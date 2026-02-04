@@ -1,0 +1,47 @@
+<div class="login-container">
+    <mat-card class="login-card">
+        <mat-card-header>
+            <mat-card-title>POS System Login</mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Username</mat-label>
+                    <input matInput type="text" formControlName="username" placeholder="Enter username"
+                        [class.is-invalid]="submitted && f['username'].errors">
+                    <mat-icon matPrefix>person</mat-icon>
+                    <mat-error *ngIf="submitted && f['username'].errors?.['required']">
+                        Username is required
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Password</mat-label>
+                    <input matInput type="password" formControlName="password" placeholder="Enter password"
+                        [class.is-invalid]="submitted && f['password'].errors">
+                    <mat-icon matPrefix>lock</mat-icon>
+                    <mat-error *ngIf="submitted && f['password'].errors?.['required']">
+                        Password is required
+                    </mat-error>
+                </mat-form-field>
+
+                <div *ngIf="error" class="error-message">
+                    <mat-icon>error</mat-icon>
+                    <span>{{ error }}</span>
+                </div>
+
+                <button mat-raised-button color="primary" type="submit" class="full-width" [disabled]="loading">
+                    <span *ngIf="!loading">Login</span>
+                    <span *ngIf="loading">Logging in...</span>
+                </button>
+
+                <div class="register-link">
+                    Don't have an account?
+                    <a routerLink="/register" class="link-button">Register here</a>
+                </div>
+            </form>
+        </mat-card-content>
+    </mat-card>
+</div>

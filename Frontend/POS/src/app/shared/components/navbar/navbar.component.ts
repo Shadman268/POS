@@ -5,6 +5,8 @@ import { ProductUpload, ProductView } from 'src/app/core/models/product-data';
 import { HttpClient } from '@angular/common/http';
 import { ProductService } from '../../services/product.service';
 import { SidebarService } from '../../services/sidebar.service';
+import { AuthService } from 'src/app/core/services/auth.service';
+import { User } from 'src/app/core/models/user';
 
 @Component({
   selector: 'app-navbar',
@@ -12,19 +14,28 @@ import { SidebarService } from '../../services/sidebar.service';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit {
+  currentUser: User | null = null;
 
   constructor(
     private dialog: MatDialog,
     private http: HttpClient,
     private productService: ProductService,
-    private sidebarService: SidebarService
+    private sidebarService: SidebarService,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
+    this.authService.currentUser.subscribe(user => {
+      this.currentUser = user;
+    });
   }
 
   toggleSidebar() {
     this.sidebarService.toggle();
+  }
+
+  logout() {
+    this.authService.logout();
   }
 
   addProduct() {

@@ -58,8 +58,8 @@
     }
 
     ::ng-deep .mat-mdc-form-field-infix {
-        min-height: 30px;
-        padding: 4px 0;
+        min-height: 22px;
+        padding: 2px 0;
     }
 
     ::ng-deep .mdc-notched-outline {
@@ -67,6 +67,10 @@
     }
 
     ::ng-deep .mat-mdc-form-field-label {
+        font-size: 10px;
+    }
+
+    ::ng-deep input {
         font-size: 12px;
     }
 }
@@ -99,8 +103,8 @@
     }
 
     ::ng-deep .mat-mdc-form-field-infix {
-        min-height: 30px;
-        padding: 4px 0;
+        min-height: 22px;
+        padding: 2px 0;
     }
 
     ::ng-deep .mdc-notched-outline {
@@ -108,6 +112,10 @@
     }
 
     ::ng-deep .mat-mdc-form-field-label {
+        font-size: 10px;
+    }
+
+    ::ng-deep input {
         font-size: 12px;
     }
 }
@@ -129,42 +137,42 @@
 
 .journal-header {
     flex-shrink: 0;
-    padding: 6px 12px;
+    padding: 4px 8px;
     background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .journal-body {
     flex: 1;
     overflow: hidden;
-    padding: 0 12px;
+    padding: 0 8px;
 }
 
 .journal-footer {
     flex-shrink: 0;
-    padding: 8px 12px;
+    padding: 4px 8px;
     background: #ffffff;
     border-top: 1px solid #e2e8f0;
-    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .top-row {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
 }
 
 .customer-section {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex: 1;
 }
 
 .customer-icon {
     color: #667eea;
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .customer-select {
@@ -179,18 +187,23 @@
     }
 
     ::ng-deep .mat-mdc-form-field {
-        line-height: 1.2;
+        line-height: 1;
+        font-size: 12px;
     }
 
     ::ng-deep .mat-mdc-form-field-infix {
-        min-height: 32px;
-        padding: 8px 0;
+        min-height: 20px;
+        padding: 2px 0;
+    }
+
+    ::ng-deep .mat-mdc-select {
+        font-size: 12px;
     }
 }
 
 .add-customer-btn {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     background: #f7fafc;
     border: 1px solid #e2e8f0;
 
@@ -199,16 +212,16 @@
     }
 
     mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
     }
 }
 
 .search-section {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex: 2;
 }
 
@@ -224,18 +237,23 @@
     }
 
     ::ng-deep .mat-mdc-form-field {
-        line-height: 1.2;
+        line-height: 1;
+        font-size: 12px;
     }
 
     ::ng-deep .mat-mdc-form-field-infix {
-        min-height: 32px;
-        padding: 8px 0;
+        min-height: 20px;
+        padding: 2px 0;
+    }
+
+    ::ng-deep input {
+        font-size: 12px;
     }
 }
 
 .search-btn {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     background: #f0fff4;
     border: 1px solid #c6f6d5;
 
@@ -244,16 +262,16 @@
     }
 
     mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
     }
 }
 
 .item-list {
     width: 100%;
     height: 100%;
-    margin: 4px 0;
+    margin: 2px 0;
 }
 
 .table-container {

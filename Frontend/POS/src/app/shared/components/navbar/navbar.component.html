@@ -13,5 +13,15 @@
             <mat-icon class="icon">add</mat-icon>
             <mat-label class="label">Archive</mat-label>
         </button>
+
+        <div class="user-info" *ngIf="currentUser">
+            <span class="username">{{ currentUser.username }}</span>
+            <span class="role">({{ currentUser.role }})</span>
+        </div>
+
+        <button class="button" (click)="logout()" *ngIf="currentUser">
+            <mat-icon class="icon">exit_to_app</mat-icon>
+            <mat-label class="label">Logout</mat-label>
+        </button>
     </div>
 </mat-toolbar>

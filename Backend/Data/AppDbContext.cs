@@ -13,6 +13,8 @@ namespace Backend.Data
         public DbSet<Product> Products { get; set; } = null!;
         public DbSet<Receipt> Receipts { get; set; } = null!;
         public DbSet<ReceiptItem> ReceiptItems { get; set; } = null!;
+        public DbSet<User> Users { get; set; } = null!;
+        public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +40,28 @@ namespace Backend.Data
                 .HasOne(ri => ri.Product)
                 .WithMany()
                 .HasForeignKey(ri => ri.ProductId);
+
+            // Configure User
+            modelBuilder.Entity<User>()
+                .HasKey(u => u.Id);
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+
+            // Configure RefreshToken
+            modelBuilder.Entity<RefreshToken>()
+                .HasKey(rt => rt.Id);
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne(rt => rt.User)
+                .WithMany()
+                .HasForeignKey(rt => rt.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasIndex(rt => rt.Token)
+                .IsUnique();
         }
     }
 }

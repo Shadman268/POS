@@ -20,12 +20,15 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatListModule } from '@angular/material/list';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AddProductDialogComponent } from './shared/dialogs/add-product-dialog/add-product-dialog.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
+import { LoginComponent } from './shared/components/login/login.component';
+import { RegisterComponent } from './shared/components/register/register.component';
+import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
 
 @NgModule({
   declarations: [
@@ -36,7 +39,9 @@ import { SidebarComponent } from './shared/components/sidebar/sidebar.component'
     ProductViewComponent,
     NavbarComponent,
     AddProductDialogComponent,
-    SidebarComponent
+    SidebarComponent,
+    LoginComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,
@@ -60,7 +65,9 @@ import { SidebarComponent } from './shared/components/sidebar/sidebar.component'
     MatGridListModule,
     MatSidenavModule
   ],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

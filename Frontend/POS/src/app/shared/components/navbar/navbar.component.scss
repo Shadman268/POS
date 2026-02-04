@@ -4,10 +4,29 @@
 
 .nav-icon {
     display: flex;
-    justify-content: flex-end; 
+    justify-content: flex-end;
     align-items: center;
     width: 100%;
     gap: 2vmin;
+}
+
+.user-info {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    margin-right: 10px;
+    color: white;
+    font-size: 0.9vw;
+
+    .username {
+        font-weight: 600;
+    }
+
+    .role {
+        font-size: 0.7vw;
+        opacity: 0.9;
+        text-transform: capitalize;
+    }
 }
 
 .button {
@@ -23,7 +42,7 @@
 
 .button :hover {
     color: aqua;
-    background-color:rgb(15, 35, 218);
+    background-color: rgb(15, 35, 218);
 }
 
 .icon {
