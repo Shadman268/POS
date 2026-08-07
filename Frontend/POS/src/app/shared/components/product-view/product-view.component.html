@@ -1,10 +1,32 @@
-<mat-grid-list cols="8" rowHeight="140px" gutterSize="6px">
-    <mat-grid-tile *ngFor="let product of this.productService.allProducts" (click)="selectProduct(product)">
-        <div class="product-card">
-            <img [src]="'http://localhost:5003/' + product.imagePath" alt="{{ product.productName }}"
-                class="product-image">
-            <span class="name">{{ product.productName }}</span>
-            <span class="price">{{ product.price }}</span>
-        </div>
-    </mat-grid-tile>
-</mat-grid-list>
+<div class="product-panel">
+  <div class="filters">
+    <select class="filter-select" [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
+      <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+    </select>
+    <select class="filter-select" [(ngModel)]="selectedBrand" (change)="onBrandChange()">
+      <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
+    </select>
+  </div>
+
+  <div class="product-list">
+    <div
+      class="product-card"
+      *ngFor="let product of filteredProducts; let i = index"
+      (click)="selectProduct(product)"
+    >
+      <div class="card-accent" [style.background]="accentColor(i)">
+        <mat-icon>{{ productIcon(product) }}</mat-icon>
+      </div>
+      <div class="card-body">
+        <span class="name">{{ product.productName }}</span>
+        <span class="stock">Stock: {{ product.stockQuantity ?? 100 }}</span>
+        <span class="price">৳{{ product.price }}</span>
+      </div>
+    </div>
+
+    <div class="empty-grid" *ngIf="filteredProducts.length === 0">
+      <mat-icon>inventory_2</mat-icon>
+      <p>No products found</p>
+    </div>
+  </div>
+</div>

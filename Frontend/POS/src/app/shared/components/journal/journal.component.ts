@@ -1,201 +1,192 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { PriceUnit } from 'src/app/core/models/price-unit';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { ProductService } from '../../services/product.service';
 import { ReceiptService } from '../../services/receipt.service';
 import { ReceiptPdfService } from '../../services/receipt-pdf.service';
 import { ReceiptData, ReceiptItemData } from '../../../core/models/receipt';
+import { ProductView } from '../../../core/models/product-data';
 
 @Component({
   selector: 'app-journal',
   templateUrl: './journal.component.html',
   styleUrls: ['./journal.component.scss']
 })
-
 export class JournalComponent implements OnInit {
+  @Output() addProductRequest = new EventEmitter<void>();
 
-  @ViewChild('discountInput') discountInput!: ElementRef;
-  @ViewChild('received') cashReceived!: ElementRef;
-
-  applyDiscount: boolean = false;
-
-  priceUnit: PriceUnit[] = [
-    { amount: 'percentage', viewAmount: '%' },
-    { amount: 'BDT', viewAmount: 'BDT' }
-  ]
-
-  selectedUnit = this.priceUnit[0].amount;
-
-  priceAfterDiscount: number = 0;
-  changeAmount: number = 0;
-
-  searchControl = new FormControl();
-  allItems: string[] = ['pops', 'potato', 'pepe', 'papor', 'ponir', 'poppa', 'popsa'];
-  filteredItems: string[] = [];
-  selectedItems: string[] = [];
+  customerName = 'Walk-in Customer';
+  searchControl = new FormControl('');
+  filteredProducts: ProductView[] = [];
+  discountAmount = 0;
+  vatRate = 0.05;
 
   constructor(
-    private http: HttpClient,
     protected productService: ProductService,
     private receiptService: ReceiptService,
     private receiptPdfService: ReceiptPdfService
-  ) {
-    this.filteredItems = [];
-  }
+  ) {}
 
   ngOnInit(): void {
-    // Products are already loaded by ProductService from product-view component
+    this.searchControl.valueChanges.subscribe(value => {
+      this.onSearchChange(value || '');
+    });
   }
 
-  filterItems(): void {
-    const searchText = this.searchControl.value?.toLowerCase() || '';
-    if (searchText.trim() === '') {
-      this.filteredItems = [];
+  onSearchChange(searchText: string): void {
+    const query = searchText.toLowerCase().trim();
+    if (!query) {
+      this.filteredProducts = [];
+      return;
+    }
+
+    this.filteredProducts = this.productService.allProducts.filter(p =>
+      p.productName.toLowerCase().includes(query)
+    );
+
+    const exactMatch = this.productService.allProducts.find(
+      p => p.productName.toLowerCase() === query
+    );
+    if (exactMatch) {
+      this.addProductToCart(exactMatch);
+      this.searchControl.setValue('', { emitEvent: false });
+      this.filteredProducts = [];
+    }
+  }
+
+  selectAutocomplete(product: ProductView): void {
+    this.addProductToCart(product);
+    this.searchControl.setValue('', { emitEvent: false });
+    this.filteredProducts = [];
+  }
+
+  addProductToCart(product: ProductView): void {
+    this.productService.addProductInReceipt(product);
+  }
+
+  addFromSearchButton(): void {
+    const query = (this.searchControl.value || '').toLowerCase().trim();
+    if (!query) {
+      this.addProductRequest.emit();
+      return;
+    }
+    const product = this.productService.allProducts.find(p =>
+      p.productName.toLowerCase().includes(query)
+    );
+    if (product) {
+      this.addProductToCart(product);
+      this.searchControl.setValue('', { emitEvent: false });
+      this.filteredProducts = [];
     } else {
-      this.filteredItems = this.allItems.filter(item =>
-        item.toLowerCase().includes(searchText)
-      );
+      this.addProductRequest.emit();
     }
   }
 
-  onDiscountCheckboxChange(): void {
-    if (this.applyDiscount) {
-      setTimeout(() => {
-        this.discountInput.nativeElement.focus();
-      });
-    }
+  getSubtotal(): number {
+    return this.productService.receiptItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+  }
+
+  getDiscountValue(): number {
+    return Math.min(this.discountAmount, this.getSubtotal());
+  }
+
+  getVatAmount(): number {
+    const taxable = this.getSubtotal() - this.getDiscountValue();
+    return Math.round(taxable * this.vatRate);
   }
 
   getTotal(): number {
-    let total = 0;
-    this.productService.receiptItems.forEach((item, index) => {
-      const quantity = this.getItemQuantity(index);
-      total = total + (+item.price * quantity);
-    })
-    return total;
+    return this.getSubtotal() - this.getDiscountValue() + this.getVatAmount();
   }
 
-  updatePrice(discount: number, unit: string): void {
-    const total = this.getTotal();
-    if (discount && discount > 0) {
-      if (unit === 'BDT') {
-        this.priceAfterDiscount = this.priceInBdtDiscount(total, discount);
-      } else {
-        this.priceAfterDiscount = this.priceInPercentageDiscount(total, discount);
-      }
-    } else {
-      this.priceAfterDiscount = 0;
+  getLineTotal(index: number): number {
+    const item = this.productService.receiptItems[index];
+    return item.price * item.quantity;
+  }
+
+  decreaseQuantity(index: number): void {
+    const item = this.productService.receiptItems[index];
+    if (item.quantity > 1) {
+      this.productService.updateQuantity(index, item.quantity - 1);
     }
   }
 
-  priceInPercentageDiscount(total: number, discount: number): number {
-    return total - (total * (discount / 100));
+  increaseQuantity(index: number): void {
+    const item = this.productService.receiptItems[index];
+    this.productService.updateQuantity(index, item.quantity + 1);
   }
 
-  priceInBdtDiscount(total: number, discount: number): number {
-    return total - discount;
+  onQuantityInput(index: number, value: string): void {
+    const qty = parseInt(value, 10);
+    if (!isNaN(qty) && qty > 0) {
+      this.productService.updateQuantity(index, qty);
+    }
   }
 
-  updateChangeAmount(received: number, discount?: number, unit?: string): void {
-    const finalPrice = this.priceAfterDiscount > 0 ? this.priceAfterDiscount : this.getTotal();
-    this.changeAmount = received - finalPrice;
+  removeItem(index: number): void {
+    this.productService.removeFromReceipt(index);
+  }
+
+  lineIcon(index: number): string {
+    const category = (this.productService.receiptItems[index].category || '').toLowerCase();
+    if (category.includes('equipment')) {
+      return 'medical_services';
+    }
+    return 'medication';
+  }
+
+  lineAccent(index: number): string {
+    const colors = ['#dbeafe', '#dcfce7', '#fef9c3', '#fee2e2', '#ede9fe'];
+    return colors[index % colors.length];
+  }
+
+  holdOrder(): void {
+    // Placeholder for hold functionality
   }
 
   processPayment(): void {
-    const customerName = 'Walk-in Customer';
+    if (this.productService.receiptItems.length === 0) {
+      return;
+    }
 
-    // Convert receipt items to the format expected by backend
+    const subtotal = this.getSubtotal();
+    const discount = this.getDiscountValue();
+    const total = this.getTotal();
+
     const receiptItems: ReceiptItemData[] = this.productService.receiptItems.map(item => ({
-      productId: item.id || 0, // Assuming your ProductService items have productId
+      productId: item.productId,
       productName: item.productName,
-      quantity: 1, // Currently hardcoded to 1
-      price: +item.price,
-      subtotal: +item.price
+      quantity: item.quantity,
+      price: item.price,
+      subtotal: item.price * item.quantity
     }));
 
-    const total = this.getTotal();
-    const discountValue = +(this.discountInput?.nativeElement?.value || 0);
-    const hasDiscount = discountValue > 0;
-    const finalPrice = hasDiscount && this.priceAfterDiscount > 0 ? this.priceAfterDiscount : total;
-
     const receiptData: ReceiptData = {
-      customerName: customerName,
-      total: total,
-      discountValue: hasDiscount ? discountValue : 0,
-      discountUnit: hasDiscount ? this.selectedUnit : '',
-      priceAfterDiscount: finalPrice,
-      cashReceived: +(this.cashReceived?.nativeElement?.value || 0),
-      changeAmount: this.changeAmount,
+      customerName: this.customerName,
+      total: subtotal,
+      discountValue: discount,
+      discountUnit: 'BDT',
+      priceAfterDiscount: total,
+      cashReceived: total,
+      changeAmount: 0,
       items: receiptItems
     };
 
     this.receiptService.createReceipt(receiptData).subscribe({
       next: (response) => {
-        console.log('Receipt created successfully:', response);
-        // Show receipt preview dialog
-        this.receiptPdfService.showReceiptPreview(response || receiptData).subscribe(result => {
-          // Dialog closed (either after printing or clicking close)
+        this.receiptPdfService.showReceiptPreview(response || receiptData).subscribe(() => {
           this.clearReceipt();
         });
       },
-      error: (error) => {
-        console.error('Error creating receipt:', error);
-      }
+      error: (error) => console.error('Error creating receipt:', error)
     });
   }
 
   clearReceipt(): void {
-    this.productService.receiptItems = [];
-    this.priceAfterDiscount = 0;
-    this.changeAmount = 0;
-
-    if (this.discountInput) this.discountInput.nativeElement.value = '';
-    if (this.cashReceived) this.cashReceived.nativeElement.value = '';
+    this.productService.clearReceipt();
+    this.discountAmount = 0;
+    this.customerName = 'Walk-in Customer';
   }
-
-  // Add quantity tracking for items
-  itemQuantities: { [key: number]: number } = {};
-
-  getItemQuantity(index: number): number {
-    return this.itemQuantities[index] || 1;
-  }
-
-  increaseQuantity(index: number): void {
-    if (!this.itemQuantities[index]) {
-      this.itemQuantities[index] = 1;
-    }
-    this.itemQuantities[index]++;
-  }
-
-  decreaseQuantity(index: number): void {
-    if (!this.itemQuantities[index]) {
-      this.itemQuantities[index] = 1;
-    }
-    if (this.itemQuantities[index] > 1) {
-      this.itemQuantities[index]--;
-    }
-  }
-
-  getItemSubtotal(index: number): number {
-    const item = this.productService.receiptItems[index];
-    const quantity = this.getItemQuantity(index);
-    return +item.price * quantity;
-  }
-
-  removeItem(index: number): void {
-    this.productService.receiptItems.splice(index, 1);
-    // Reorganize quantity tracking after removal
-    const newQuantities: { [key: number]: number } = {};
-    Object.keys(this.itemQuantities).forEach(key => {
-      const keyNum = +key;
-      if (keyNum < index) {
-        newQuantities[keyNum] = this.itemQuantities[keyNum];
-      } else if (keyNum > index) {
-        newQuantities[keyNum - 1] = this.itemQuantities[keyNum];
-      }
-    });
-    this.itemQuantities = newQuantities;
-  }
-
 }

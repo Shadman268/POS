@@ -1,11 +1,13 @@
 using Backend.DTOs;
 using Backend.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ReceiptController : ControllerBase
     {
         private readonly IReceiptService _receiptService;

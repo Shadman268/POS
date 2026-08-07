@@ -4,12 +4,12 @@ import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { map, catchError, tap, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { LoginRequest, LoginResponse, User, UserRole, RegisterRequest, RegisterResponse, RefreshTokenResponse } from '../../core/models/user';
+import { ApiConfigService } from './api-config.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
-    private baseUrl = 'http://localhost:5003/api';
     private currentUserSubject: BehaviorSubject<User | null>;
     public currentUser: Observable<User | null>;
 
@@ -21,7 +21,8 @@ export class AuthService {
 
     constructor(
         private http: HttpClient,
-        private router: Router
+        private router: Router,
+        private api: ApiConfigService
     ) {
         const storedUser = localStorage.getItem('currentUser');
         this.currentUserSubject = new BehaviorSubject<User | null>(
@@ -53,7 +54,7 @@ export class AuthService {
     }
 
     login(credentials: LoginRequest): Observable<LoginResponse> {
-        return this.http.post<LoginResponse>(`${this.baseUrl}/Auth/login`, credentials, {
+        return this.http.post<LoginResponse>(this.api.url('Auth/login'), credentials, {
             withCredentials: true // Required for receiving HttpOnly refresh token cookie
         }).pipe(
             map(response => {
@@ -68,7 +69,7 @@ export class AuthService {
     }
 
     register(data: RegisterRequest): Observable<RegisterResponse> {
-        return this.http.post<RegisterResponse>(`${this.baseUrl}/Auth/register`, data);
+        return this.http.post<RegisterResponse>(this.api.url('Auth/register'), data);
     }
 
     /**
@@ -85,7 +86,7 @@ export class AuthService {
 
         this.isRefreshing = true;
 
-        return this.http.post<RefreshTokenResponse>(`${this.baseUrl}/Auth/refresh-token`, {}, {
+        return this.http.post<RefreshTokenResponse>(this.api.url('Auth/refresh-token'), {}, {
             withCredentials: true // Send HttpOnly refresh token cookie
         }).pipe(
             tap(response => {
@@ -106,7 +107,7 @@ export class AuthService {
 
     logout(): void {
         // Call backend to clear the HttpOnly refresh token cookie
-        this.http.post(`${this.baseUrl}/Auth/logout`, {}, { withCredentials: true })
+        this.http.post(this.api.url('Auth/logout'), {}, { withCredentials: true })
             .subscribe({
                 complete: () => this.clearAuthState(),
                 error: () => this.clearAuthState()

@@ -13,20 +13,25 @@ namespace Backend.Services
         private readonly IReceiptRepository _receiptRepository;
         private readonly IMapper _mapper;
         private readonly AppDbContext _context;
+        private readonly ITenantContext _tenantContext;
 
-        public ReceiptService(IReceiptRepository receiptRepository, IMapper mapper, AppDbContext context)
+        public ReceiptService(
+            IReceiptRepository receiptRepository,
+            IMapper mapper,
+            AppDbContext context,
+            ITenantContext tenantContext)
         {
             _receiptRepository = receiptRepository;
             _mapper = mapper;
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _tenantContext = tenantContext;
         }
 
         public async Task<Receipt> CreateReceiptAsync(ReceiptDto receiptDto)
         {
-            // Verify all products exist before creating the receipt
             var productIds = receiptDto.Items.Select(item => item.ProductId).ToList();
             var existingProducts = await _context.Products
-                .Where(p => productIds.Contains(p.Id))
+                .Where(p => p.TenantId == _tenantContext.TenantId && productIds.Contains(p.Id))
                 .Select(p => p.Id)
                 .ToListAsync();
 

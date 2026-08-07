@@ -1,13 +1,28 @@
-<app-sidebar>
-    <div class="main-container">
-        <div class="nav-container">
-            <app-navbar></app-navbar>
-        </div>
-        <div class="container">
+<div class="pos-page">
+  <div class="pos-page-header">
+    <h1>Pharmacy POS</h1>
+    <mat-icon class="header-chevron">expand_more</mat-icon>
+  </div>
 
-            <app-journal class="journal"></app-journal>
-
-            <app-product-view class="products"></app-product-view>
-        </div>
+  <div class="pos-body">
+    <div class="products-panel" [class.mobile-hidden]="mobileView === 'journal'">
+      <app-product-view></app-product-view>
     </div>
-</app-sidebar>
+
+    <div class="journal-panel" [class.mobile-hidden]="mobileView === 'products'">
+      <app-journal (addProductRequest)="addProduct()"></app-journal>
+    </div>
+  </div>
+
+  <div class="mobile-tabs">
+    <button class="tab-btn" [class.active]="mobileView === 'products'" (click)="mobileView = 'products'">
+      <mat-icon>medication</mat-icon>
+      Products
+    </button>
+    <button class="tab-btn" [class.active]="mobileView === 'journal'" (click)="mobileView = 'journal'">
+      <mat-icon>receipt_long</mat-icon>
+      Journal
+      <span class="badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+    </button>
+  </div>
+</div>

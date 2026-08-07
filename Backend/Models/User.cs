@@ -12,6 +12,10 @@ namespace Backend.Models
     public class User
     {
         public int Id { get; set; }
+
+        public int TenantId { get; set; }
+
+        public int? BranchId { get; set; }
         
         [Required]
         [StringLength(50)]
@@ -24,5 +28,7 @@ namespace Backend.Models
         public UserRole Role { get; set; }
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public Tenant Tenant { get; set; } = null!;
     }
 }

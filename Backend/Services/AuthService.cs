@@ -26,26 +26,30 @@ namespace Backend.Services
 
         public async Task<(LoginResponse Response, RefreshToken RefreshToken)> LoginAsync(LoginRequest request)
         {
+            var tenant = await _context.Tenants
+                .FirstOrDefaultAsync(t => t.ShopCode == request.ShopCode && t.IsActive);
+
+            if (tenant == null)
+            {
+                throw new UnauthorizedAccessException("Invalid shop code");
+            }
+
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == request.Username);
+                .Include(u => u.Tenant)
+                .FirstOrDefaultAsync(u => u.TenantId == tenant.Id && u.Username == request.Username);
 
             if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
             {
                 throw new UnauthorizedAccessException("Invalid username or password");
             }
 
-            var accessToken = GenerateJwtToken(user.Id, user.Username, user.Role.ToString());
+            var accessToken = GenerateJwtToken(user);
             var refreshToken = await GenerateRefreshTokenAsync(user.Id);
 
             var response = new LoginResponse
             {
                 AccessToken = accessToken,
-                User = new UserDto
-                {
-                    Id = user.Id.ToString(),
-                    Username = user.Username,
-                    Role = user.Role.ToString().ToLower()
-                }
+                User = MapUserDto(user)
             };
 
             return (response, refreshToken);
@@ -53,24 +57,38 @@ namespace Backend.Services
 
         public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
         {
-            // Check if username already exists
+            var tenant = await _context.Tenants
+                .FirstOrDefaultAsync(t => t.ShopCode == request.ShopCode && t.IsActive);
+
+            if (tenant == null)
+            {
+                tenant = new Tenant
+                {
+                    ShopCode = request.ShopCode.ToLowerInvariant(),
+                    Name = request.ShopCode,
+                    IsActive = true,
+                    CreatedAtUtc = DateTime.UtcNow
+                };
+                _context.Tenants.Add(tenant);
+                await _context.SaveChangesAsync();
+            }
+
             var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == request.Username);
+                .FirstOrDefaultAsync(u => u.TenantId == tenant.Id && u.Username == request.Username);
 
             if (existingUser != null)
             {
-                throw new InvalidOperationException("Username already exists");
+                throw new InvalidOperationException("Username already exists for this shop");
             }
 
-            // Parse role
             if (!Enum.TryParse<UserRole>(request.Role, true, out var role))
             {
                 throw new InvalidOperationException("Invalid role specified");
             }
 
-            // Create new user
             var user = new User
             {
+                TenantId = tenant.Id,
                 Username = request.Username,
                 PasswordHash = HashPassword(request.Password),
                 Role = role,
@@ -80,15 +98,12 @@ namespace Backend.Services
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
+            user.Tenant = tenant;
+
             return new RegisterResponse
             {
                 Message = "Registration successful",
-                User = new UserDto
-                {
-                    Id = user.Id.ToString(),
-                    Username = user.Username,
-                    Role = user.Role.ToString().ToLower()
-                }
+                User = MapUserDto(user)
             };
         }
 
@@ -96,6 +111,7 @@ namespace Backend.Services
         {
             var existingToken = await _context.RefreshTokens
                 .Include(rt => rt.User)
+                .ThenInclude(u => u.Tenant)
                 .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
 
             if (existingToken == null || !existingToken.IsActive)
@@ -103,27 +119,20 @@ namespace Backend.Services
                 return null;
             }
 
-            // Revoke the old refresh token
             existingToken.Revoked = DateTime.UtcNow;
 
-            // Generate new tokens
             var newRefreshToken = await GenerateRefreshTokenAsync(existingToken.UserId);
             existingToken.ReplacedByToken = newRefreshToken.Token;
 
             await _context.SaveChangesAsync();
 
             var user = existingToken.User;
-            var accessToken = GenerateJwtToken(user.Id, user.Username, user.Role.ToString());
+            var accessToken = GenerateJwtToken(user);
 
             var response = new RefreshTokenResponse
             {
                 AccessToken = accessToken,
-                User = new UserDto
-                {
-                    Id = user.Id.ToString(),
-                    Username = user.Username,
-                    Role = user.Role.ToString().ToLower()
-                }
+                User = MapUserDto(user)
             };
 
             return (response, newRefreshToken);
@@ -141,18 +150,25 @@ namespace Backend.Services
             }
         }
 
-        public string GenerateJwtToken(int userId, string username, string role)
+        public string GenerateJwtToken(User user)
         {
             var key = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured");
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
+            var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Role, role)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role.ToString()),
+                new Claim("tenantId", user.TenantId.ToString()),
+                new Claim("shopCode", user.Tenant?.ShopCode ?? string.Empty)
             };
+
+            if (user.BranchId.HasValue)
+            {
+                claims.Add(new Claim("branchId", user.BranchId.Value.ToString()));
+            }
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
@@ -167,7 +183,6 @@ namespace Backend.Services
 
         private async Task<RefreshToken> GenerateRefreshTokenAsync(int userId)
         {
-            // Revoke any existing active refresh tokens for this user
             var existingTokens = await _context.RefreshTokens
                 .Where(rt => rt.UserId == userId && rt.Revoked == null && rt.Expires > DateTime.UtcNow)
                 .ToListAsync();
@@ -189,6 +204,19 @@ namespace Backend.Services
             await _context.SaveChangesAsync();
 
             return refreshToken;
+        }
+
+        private static UserDto MapUserDto(User user)
+        {
+            return new UserDto
+            {
+                Id = user.Id.ToString(),
+                Username = user.Username,
+                Role = user.Role.ToString().ToLower(),
+                TenantId = user.TenantId.ToString(),
+                ShopCode = user.Tenant?.ShopCode ?? string.Empty,
+                TenantName = user.Tenant?.Name ?? string.Empty
+            };
         }
 
         private static string GenerateSecureToken()

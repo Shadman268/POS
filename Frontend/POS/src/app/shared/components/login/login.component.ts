@@ -23,18 +23,18 @@ export class LoginComponent implements OnInit {
     ) {
         // Redirect to home if already logged in
         if (this.authService.currentUserValue) {
-            this.router.navigate(['/pos']);
+            this.router.navigate(['/dashboard']);
         }
     }
 
     ngOnInit(): void {
         this.loginForm = this.formBuilder.group({
+            shopCode: ['demo', Validators.required],
             username: ['', Validators.required],
             password: ['', Validators.required]
         });
 
-        // Get return url from route parameters or default to '/'
-        this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/pos';
+        this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
     }
 
     get f() {

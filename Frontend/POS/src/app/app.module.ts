@@ -19,15 +19,16 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatListModule } from '@angular/material/list';
-import { NavbarComponent } from './shared/components/navbar/navbar.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AddProductDialogComponent } from './shared/dialogs/add-product-dialog/add-product-dialog.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatGridListModule } from '@angular/material/grid-list';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 import { LoginComponent } from './shared/components/login/login.component';
 import { RegisterComponent } from './shared/components/register/register.component';
+import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
+import { DashboardComponent } from './shared/components/dashboard/dashboard.component';
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
 
 @NgModule({
@@ -37,11 +38,11 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     PosUiComponent,
     JournalComponent,
     ProductViewComponent,
-    NavbarComponent,
     AddProductDialogComponent,
-    SidebarComponent,
     LoginComponent,
-    RegisterComponent
+    RegisterComponent,
+    MainLayoutComponent,
+    DashboardComponent
   ],
   imports: [
     BrowserModule,
@@ -63,7 +64,8 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     MatAutocompleteModule,
     MatListModule,
     MatGridListModule,
-    MatSidenavModule
+    MatProgressSpinnerModule,
+    MatTooltipModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }

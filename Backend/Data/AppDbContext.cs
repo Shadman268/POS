@@ -15,6 +15,7 @@ namespace Backend.Data
         public DbSet<ReceiptItem> ReceiptItems { get; set; } = null!;
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+        public DbSet<Tenant> Tenants { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -46,7 +47,29 @@ namespace Backend.Data
                 .HasKey(u => u.Id);
 
             modelBuilder.Entity<User>()
-                .HasIndex(u => u.Username)
+                .HasIndex(u => new { u.TenantId, u.Username })
+                .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Tenant)
+                .WithMany(t => t.Users)
+                .HasForeignKey(u => u.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Tenant)
+                .WithMany(t => t.Products)
+                .HasForeignKey(p => p.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Receipt>()
+                .HasOne(r => r.Tenant)
+                .WithMany(t => t.Receipts)
+                .HasForeignKey(r => r.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Tenant>()
+                .HasIndex(t => t.ShopCode)
                 .IsUnique();
 
             // Configure RefreshToken

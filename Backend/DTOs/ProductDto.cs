@@ -7,11 +7,14 @@ namespace Backend.DTOs
         public int Id { get; set; }
         public required string ProductName { get; set; }
         public decimal Price { get; set; }
-        // For upload
+
         [JsonIgnore]
         public IFormFile? Image { get; set; }
 
-        // For response
         public string? ImagePath { get; set; }
+        public string Category { get; set; } = "Medicine";
+        public string Brand { get; set; } = "General";
+        public int StockQuantity { get; set; } = 100;
+        public string Unit { get; set; } = "Tablet";
     }
 }

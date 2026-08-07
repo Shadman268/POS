@@ -1,0 +1,158 @@
+<div class="dashboard">
+  <div *ngIf="loading" class="loading-state">
+    <mat-spinner diameter="40"></mat-spinner>
+    <span>Loading dashboard...</span>
+  </div>
+
+  <div *ngIf="error" class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+
+  <ng-container *ngIf="summary && !loading">
+    <!-- Welcome + Period Filters -->
+    <div class="welcome-row">
+      <div class="welcome-text">
+        <h1>Welcome back, {{ displayName }} 👋</h1>
+        <p>Here's what's happening at your pharmacy today.</p>
+      </div>
+      <div class="period-filters">
+        <button
+          *ngFor="let opt of periodOptions"
+          class="period-btn"
+          [class.active]="selectedPeriod === opt.value"
+          (click)="onPeriodChange(opt.value)"
+        >
+          {{ opt.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- 4 Summary Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">Total Sales</span>
+          <div class="stat-icon sales"><mat-icon>shopping_cart</mat-icon></div>
+        </div>
+        <div class="stat-value">{{ formatCurrency(summary.totalSales) }}</div>
+        <div class="stat-trend positive">{{ formatTrend(summary.salesTrendPercent) }}</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">Net Profit</span>
+          <div class="stat-icon profit"><mat-icon>savings</mat-icon></div>
+        </div>
+        <div class="stat-value">{{ formatCurrency(summary.netProfit) }}</div>
+        <div class="stat-trend positive">{{ formatTrend(summary.profitTrendPercent) }}</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">Invoice Due</span>
+          <div class="stat-icon due"><mat-icon>description</mat-icon></div>
+        </div>
+        <div class="stat-value">{{ formatCurrency(summary.invoiceDue) }}</div>
+        <div class="stat-trend neutral">{{ summary.pendingInvoiceCount }} pending invoices</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">Total Purchase</span>
+          <div class="stat-icon purchase"><mat-icon>shopping_basket</mat-icon></div>
+        </div>
+        <div class="stat-value">{{ formatCurrency(summary.totalPurchase) }}</div>
+        <div class="stat-trend" [class.positive]="summary.purchaseTrendPercent >= 0" [class.negative]="summary.purchaseTrendPercent < 0">
+          {{ formatTrend(summary.purchaseTrendPercent) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart + Expiring -->
+    <div class="middle-row">
+      <div class="panel chart-panel">
+        <div class="panel-header">
+          <h2>Sales — Last 14 Days</h2>
+          <select class="panel-select" [(ngModel)]="chartPeriod">
+            <option value="month">This month</option>
+            <option value="week">This week</option>
+          </select>
+        </div>
+        <div class="chart-wrap">
+          <svg viewBox="0 0 600 200" preserveAspectRatio="none" class="sales-chart">
+            <defs>
+              <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25" />
+                <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02" />
+              </linearGradient>
+            </defs>
+            <path *ngIf="chartAreaPath" [attr.d]="chartAreaPath" fill="url(#chartGradient)" />
+            <path *ngIf="chartPath" [attr.d]="chartPath" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div class="chart-labels">
+            <span *ngFor="let pt of chartPoints; let i = index" [style.display]="i % 2 === 0 || i === chartPoints.length - 1 ? 'inline' : 'none'">
+              {{ pt.label }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel expiring-panel">
+        <div class="panel-header">
+          <h2>Expiring Soon</h2>
+        </div>
+        <div class="expiring-list">
+          <div class="expiring-item" *ngFor="let item of summary.expiringProducts">
+            <div class="expiring-info">
+              <span class="product-name">{{ item.productName }}</span>
+              <span class="batch">Batch {{ item.batchNumber }}</span>
+            </div>
+            <span class="expiry-badge" [ngClass]="getExpiryClass(item.daysUntilExpiry)">
+              {{ item.daysUntilExpiry }} days
+            </span>
+          </div>
+          <div class="empty-expiring" *ngIf="summary.expiringProducts.length === 0">
+            <mat-icon>check_circle</mat-icon>
+            <span>No products expiring soon</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="panel transactions-panel">
+      <div class="panel-header">
+        <h2>Recent Transactions</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Invoice</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tx of summary.recentTransactions">
+              <td class="invoice">{{ tx.invoiceNumber }}</td>
+              <td>{{ tx.customerName }}</td>
+              <td>{{ tx.itemCount }}</td>
+              <td class="amount">{{ formatCurrency(tx.amount) }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(tx.status)">{{ tx.status }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="empty-transactions" *ngIf="summary.recentTransactions.length === 0">
+          <mat-icon>receipt_long</mat-icon>
+          <span>No transactions yet</span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

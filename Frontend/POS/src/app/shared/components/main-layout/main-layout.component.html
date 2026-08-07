@@ -1,0 +1,94 @@
+<div class="app-shell">
+  <div class="sidebar-backdrop" *ngIf="!sidebarCollapsed" (click)="toggleCollapse()"></div>
+
+  <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+    <div class="sidebar-top" [class.collapsed-top]="sidebarCollapsed">
+      <div
+        class="sidebar-brand"
+        [class.clickable]="sidebarCollapsed"
+        (click)="sidebarCollapsed && toggleCollapse()"
+      >
+        <div class="brand-icon-wrap">
+          <mat-icon>medication</mat-icon>
+        </div>
+        <div class="brand-text" *ngIf="!sidebarCollapsed">
+          <span class="brand-prefix">Rx</span>
+          <span class="brand-name">MedPoint</span>
+        </div>
+      </div>
+      <button
+        mat-icon-button
+        class="collapse-btn"
+        (click)="toggleCollapse()"
+        [attr.aria-label]="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+      >
+        <mat-icon>{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ng-container *ngFor="let item of navItems">
+        <a
+          *ngIf="item.route && !item.disabled"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+          class="nav-item"
+          (click)="onNavClick()"
+          [matTooltip]="sidebarCollapsed ? item.label : ''"
+        >
+          <mat-icon>{{ item.icon }}</mat-icon>
+          <span *ngIf="!sidebarCollapsed">{{ item.label }}</span>
+        </a>
+        <span
+          *ngIf="!item.route || item.disabled"
+          class="nav-item disabled"
+          [matTooltip]="sidebarCollapsed ? item.label : ''"
+        >
+          <mat-icon>{{ item.icon }}</mat-icon>
+          <span *ngIf="!sidebarCollapsed">{{ item.label }}</span>
+        </span>
+      </ng-container>
+    </nav>
+  </aside>
+
+  <div class="main-content">
+    <header class="top-header">
+      <div class="header-spacer"></div>
+
+      <div class="header-utilities">
+        <button mat-icon-button class="utility-btn" aria-label="Calculator">
+          <mat-icon>calculate</mat-icon>
+        </button>
+
+        <div class="language-select">
+          <mat-icon>language</mat-icon>
+          <select [(ngModel)]="selectedLanguage">
+            <option *ngFor="let lang of languages" [value]="lang">{{ lang }}</option>
+          </select>
+        </div>
+
+        <span class="date-pill">{{ currentDate }}</span>
+        <span class="time-pill">{{ currentTime }}</span>
+
+        <button mat-icon-button class="profile-btn" [matMenuTriggerFor]="profileMenu">
+          <span class="avatar">{{ userInitials }}</span>
+        </button>
+        <mat-menu #profileMenu="matMenu">
+          <div class="profile-menu-header">
+            <strong>{{ displayName }}</strong>
+            <small>{{ currentUser?.role }}</small>
+          </div>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            Logout
+          </button>
+        </mat-menu>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

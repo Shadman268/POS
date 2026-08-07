@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { Subject } from 'rxjs';
 import { ProductView } from 'src/app/core/models/product-data';
+import { ApiConfigService } from '../../core/services/api-config.service';
 
 @Injectable({
     providedIn: 'root'
@@ -12,7 +13,7 @@ export class SignalrService implements OnDestroy {
 
     public productAdded$ = this.productAddedSubject.asObservable();
 
-    constructor() {
+    constructor(private api: ApiConfigService) {
         this.createConnection();
         this.registerOnServerEvents();
         this.startConnection();
@@ -20,7 +21,7 @@ export class SignalrService implements OnDestroy {
 
     private createConnection() {
         this.hubConnection = new HubConnectionBuilder()
-            .withUrl('http://localhost:5003/productHub')
+            .withUrl(`${this.api.baseUrl}/productHub`)
             .build();
     }
 

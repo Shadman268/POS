@@ -9,6 +9,6 @@ namespace Backend.Services.Interfaces
         Task<RegisterResponse> RegisterAsync(RegisterRequest request);
         Task<(RefreshTokenResponse Response, RefreshToken RefreshToken)?> RefreshTokenAsync(string refreshToken);
         Task RevokeTokenAsync(string refreshToken);
-        string GenerateJwtToken(int userId, string username, string role);
+        string GenerateJwtToken(User user);
     }
 }

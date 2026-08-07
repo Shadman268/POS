@@ -8,6 +8,16 @@
             <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
                 <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Shop Code</mat-label>
+                    <input matInput type="text" formControlName="shopCode" placeholder="e.g. demo"
+                        [class.is-invalid]="submitted && f['shopCode'].errors">
+                    <mat-icon matPrefix>store</mat-icon>
+                    <mat-error *ngIf="submitted && f['shopCode'].errors?.['required']">
+                        Shop code is required
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
                     <mat-label>Username</mat-label>
                     <input matInput type="text" formControlName="username" placeholder="Enter username"
                         [class.is-invalid]="submitted && f['username'].errors">

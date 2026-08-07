@@ -28,12 +28,13 @@ export class RegisterComponent implements OnInit {
     ) {
         // Redirect to home if already logged in
         if (this.authService.currentUserValue) {
-            this.router.navigate(['/pos']);
+            this.router.navigate(['/dashboard']);
         }
     }
 
     ngOnInit(): void {
         this.registerForm = this.formBuilder.group({
+            shopCode: ['', [Validators.required, Validators.minLength(2)]],
             username: ['', [Validators.required, Validators.minLength(3)]],
             password: ['', [Validators.required, Validators.minLength(6)]],
             confirmPassword: ['', Validators.required],

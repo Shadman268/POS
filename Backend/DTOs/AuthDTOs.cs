@@ -5,6 +5,9 @@ namespace Backend.DTOs
     public class LoginRequest
     {
         [Required]
+        public string ShopCode { get; set; } = string.Empty;
+
+        [Required]
         public string Username { get; set; } = string.Empty;
 
         [Required]
@@ -26,6 +29,10 @@ namespace Backend.DTOs
 
     public class RegisterRequest
     {
+        [Required]
+        [StringLength(50, MinimumLength = 2)]
+        public string ShopCode { get; set; } = string.Empty;
+
         [Required]
         [StringLength(50, MinimumLength = 3)]
         public string Username { get; set; } = string.Empty;
@@ -53,5 +60,8 @@ namespace Backend.DTOs
         public string Id { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public string TenantId { get; set; } = string.Empty;
+        public string ShopCode { get; set; } = string.Empty;
+        public string TenantName { get; set; } = string.Empty;
     }
 }

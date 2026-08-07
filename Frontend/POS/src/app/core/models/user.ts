@@ -8,9 +8,13 @@ export interface User {
     id: string;
     username: string;
     role: UserRole;
+    tenantId?: string;
+    shopCode?: string;
+    tenantName?: string;
 }
 
 export interface LoginRequest {
+    shopCode: string;
     username: string;
     password: string;
 }
@@ -18,7 +22,6 @@ export interface LoginRequest {
 export interface LoginResponse {
     accessToken: string;
     user: User;
-    // refreshToken is sent via HttpOnly cookie, not in response body
 }
 
 export interface RefreshTokenResponse {
@@ -27,6 +30,7 @@ export interface RefreshTokenResponse {
 }
 
 export interface RegisterRequest {
+    shopCode: string;
     username: string;
     password: string;
     confirmPassword: string;

@@ -28,7 +28,13 @@ namespace Backend.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal ChangeAmount { get; set; }
 
+        public int TenantId { get; set; }
+
+        public int? BranchId { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public Tenant Tenant { get; set; } = null!;
 
         // Navigation property with inverse property configuration
         [InverseProperty("Receipt")]
