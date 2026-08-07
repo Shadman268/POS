@@ -1,58 +1,41 @@
 :host {
   display: block;
   height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .pos-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 58px);
+  height: 100%;
+  min-height: 0;
   background: #f4f6f9;
-}
-
-.pos-page-header {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 16px 24px 8px;
-  background: #f4f6f9;
-
-  h1 {
-    margin: 0;
-    font-size: 22px;
-    font-weight: 700;
-    color: #1e293b;
-  }
-
-  .header-chevron {
-    color: #64748b;
-    font-size: 22px;
-    width: 22px;
-    height: 22px;
-  }
 }
 
 .pos-body {
   flex: 1;
   display: flex;
-  gap: 16px;
-  padding: 0 16px 16px;
+  gap: 12px;
+  padding: 8px 12px 12px;
   min-height: 0;
   overflow: hidden;
 }
 
 .products-panel {
-  flex: 1;
-  min-width: 0;
+  flex: 0 0 36%;
+  max-width: 420px;
+  min-width: 280px;
+  min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 .journal-panel {
-  width: 420px;
-  min-width: 360px;
-  flex-shrink: 0;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
   background: #fff;
   border-radius: 14px;
   border: 1px solid #e8ecf1;
@@ -66,16 +49,9 @@
   display: none;
 }
 
-@media (max-width: 1024px) {
-  .journal-panel {
-    width: 380px;
-    min-width: 320px;
-  }
-}
-
 @media (max-width: 768px) {
   .pos-page {
-    height: calc(100vh - 58px);
+    height: 100%;
     padding-bottom: 56px;
   }
 

@@ -112,7 +112,7 @@
 .sidebar-nav {
   flex: 1;
   padding: 8px 10px;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -165,11 +165,11 @@
 .top-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 24px;
+  gap: 8px;
+  padding: 4px 16px;
   background: #fff;
   border-bottom: 1px solid #e8ecf1;
-  min-height: 58px;
+  min-height: 44px;
 }
 
 .header-spacer {
@@ -212,10 +212,10 @@
 
 .date-pill,
 .time-pill {
-  padding: 6px 14px;
+  padding: 4px 10px;
   background: #f1f5f9;
-  border-radius: 20px;
-  font-size: 13px;
+  border-radius: 16px;
+  font-size: 12px;
   font-weight: 500;
   color: #475569;
   white-space: nowrap;
@@ -266,7 +266,8 @@
 
 .page-content {
   flex: 1;
-  overflow: auto;
+  min-height: 0;
+  overflow: hidden;
   padding: 0;
   background: #f4f6f9;
 }

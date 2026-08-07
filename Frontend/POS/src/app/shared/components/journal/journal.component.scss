@@ -1,7 +1,19 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 .journal-container {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
   height: 100%;
+  overflow: hidden;
   background: #fff;
 }
 
@@ -9,7 +21,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 18px 12px;
+  padding: 10px 16px 8px;
   border-bottom: 1px solid #f1f5f9;
   flex-shrink: 0;
 }
@@ -27,9 +39,9 @@
   border: none;
   background: #eff6ff;
   color: #2563eb;
-  padding: 8px 14px;
+  padding: 5px 10px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 
@@ -47,7 +59,7 @@
 .search-row {
   display: flex;
   gap: 8px;
-  padding: 12px 18px;
+  padding: 8px 16px;
   border-bottom: 1px solid #f1f5f9;
   flex-shrink: 0;
 }
@@ -74,8 +86,8 @@
     flex: 1;
     border: none;
     background: transparent;
-    padding: 10px 0;
-    font-size: 14px;
+    padding: 8px 0;
+    font-size: 13px;
     outline: none;
     color: #1e293b;
 
@@ -122,12 +134,12 @@
 }
 
 .add-product-btn {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border: none;
   background: #2563eb;
   color: #fff;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -135,9 +147,9 @@
   flex-shrink: 0;
 
   mat-icon {
-    font-size: 22px;
-    width: 22px;
-    height: 22px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
   }
 
   &:hover {
@@ -147,8 +159,11 @@
 
 .line-items {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 8px 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .line-item {
@@ -303,7 +318,7 @@
 }
 
 .summary-section {
-  padding: 16px 18px 18px;
+  padding: 8px 16px 10px;
   border-top: 1px solid #f1f5f9;
   flex-shrink: 0;
   background: #fff;
@@ -313,8 +328,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 0;
-  font-size: 14px;
+  padding: 2px 0;
+  font-size: 13px;
   color: #64748b;
 
   span:last-child {
@@ -336,12 +351,12 @@
   }
 
   .discount-input {
-    width: 64px;
-    padding: 4px 8px;
+    width: 56px;
+    padding: 2px 6px;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     text-align: right;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: #334155;
     outline: none;
@@ -354,18 +369,18 @@
 }
 
 .total-row {
-  padding-top: 10px;
-  margin-top: 4px;
+  padding-top: 6px;
+  margin-top: 2px;
   border-top: 1px solid #f1f5f9;
 
   span:first-child {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     color: #1e293b;
   }
 
   .total-amount {
-    font-size: 24px !important;
+    font-size: 18px !important;
     font-weight: 800 !important;
     color: #1e293b !important;
   }
@@ -373,17 +388,17 @@
 
 .action-buttons {
   display: flex;
-  gap: 10px;
-  margin-top: 14px;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .hold-btn {
   flex: 0 0 auto;
-  padding: 14px 24px;
+  padding: 10px 18px;
   border: 1px solid #e2e8f0;
   background: #fff;
-  border-radius: 10px;
-  font-size: 15px;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 600;
   color: #475569;
   cursor: pointer;
@@ -395,12 +410,12 @@
 
 .charge-btn {
   flex: 1;
-  padding: 14px 20px;
+  padding: 10px 16px;
   border: none;
   background: #2563eb;
   color: #fff;
-  border-radius: 10px;
-  font-size: 15px;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
 

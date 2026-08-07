@@ -9,20 +9,23 @@
   </div>
 
   <div class="product-list">
-    <div
-      class="product-card"
-      *ngFor="let product of filteredProducts; let i = index"
-      (click)="selectProduct(product)"
-    >
-      <div class="card-accent" [style.background]="accentColor(i)">
-        <mat-icon>{{ productIcon(product) }}</mat-icon>
-      </div>
-      <div class="card-body">
-        <span class="name">{{ product.productName }}</span>
-        <span class="stock">Stock: {{ product.stockQuantity ?? 100 }}</span>
-        <span class="price">৳{{ product.price }}</span>
-      </div>
-    </div>
+    <mat-grid-list *ngIf="filteredProducts.length > 0" cols="2" rowHeight="128px" gutterSize="10px">
+      <mat-grid-tile *ngFor="let product of filteredProducts; let i = index">
+        <div
+          class="product-tile"
+          (click)="selectProduct(product)"
+        >
+          <div class="tile-accent" [style.background]="accentColor(i)">
+            <mat-icon>{{ productIcon(product) }}</mat-icon>
+          </div>
+          <div class="tile-body">
+            <span class="name">{{ product.productName }}</span>
+            <span class="stock">Stock: {{ product.stockQuantity ?? 100 }}</span>
+            <span class="price">৳{{ product.price }}</span>
+          </div>
+        </div>
+      </mat-grid-tile>
+    </mat-grid-list>
 
     <div class="empty-grid" *ngIf="filteredProducts.length === 0">
       <mat-icon>inventory_2</mat-icon>
