@@ -16,13 +16,17 @@
         type="text"
         placeholder="Type product name to add..."
         [formControl]="searchControl"
+        (keydown)="onSearchKeydown($event)"
+        autocomplete="off"
       />
       <div class="autocomplete-dropdown" *ngIf="filteredProducts.length > 0">
         <button
           type="button"
           class="autocomplete-item"
-          *ngFor="let product of filteredProducts"
+          [class.active]="i === activeIndex"
+          *ngFor="let product of filteredProducts; let i = index"
           (click)="selectAutocomplete(product)"
+          (mouseenter)="activeIndex = i"
         >
           <span>{{ product.productName }}</span>
           <span class="auto-price">৳{{ product.price }}</span>
@@ -50,7 +54,7 @@
           type="number"
           class="qty-input"
           [value]="item.quantity"
-          (change)="onQuantityInput(i, $any($event.target).value)"
+          (input)="onQuantityInput(i, $any($event.target).value)"
           min="1"
         />
         <button type="button" class="qty-btn" (click)="increaseQuantity(i)">+</button>

@@ -17,8 +17,6 @@ export class ProductViewComponent implements OnInit {
   selectedCategory = 'All Category';
   selectedBrand = 'All Brand';
 
-  accentColors = ['#dbeafe', '#dcfce7', '#fef9c3', '#fee2e2', '#ede9fe', '#ffedd5'];
-
   constructor(
     private http: HttpClient,
     private productService: ProductService,
@@ -53,16 +51,14 @@ export class ProductViewComponent implements OnInit {
     });
   }
 
-  accentColor(index: number): string {
-    return this.accentColors[index % this.accentColors.length];
-  }
-
-  productIcon(product: ProductView): string {
-    const category = (product.category || '').toLowerCase();
-    if (category.includes('equipment') || category.includes('device')) {
-      return 'medical_services';
+  stockLevel(stock: number): 'good' | 'low' | 'out' {
+    if (stock <= 0) {
+      return 'out';
     }
-    return 'medication';
+    if (stock <= 10) {
+      return 'low';
+    }
+    return 'good';
   }
 
   selectProduct(product: ProductView): void {

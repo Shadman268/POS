@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { ReceiptService } from '../../services/receipt.service';
@@ -17,13 +17,15 @@ export class JournalComponent implements OnInit {
   customerName = 'Walk-in Customer';
   searchControl = new FormControl('');
   filteredProducts: ProductView[] = [];
+  activeIndex = -1;
   discountAmount = 0;
   vatRate = 0.05;
 
   constructor(
     protected productService: ProductService,
     private receiptService: ReceiptService,
-    private receiptPdfService: ReceiptPdfService
+    private receiptPdfService: ReceiptPdfService,
+    private host: ElementRef<HTMLElement>
   ) {}
 
   ngOnInit(): void {
@@ -36,27 +38,73 @@ export class JournalComponent implements OnInit {
     const query = searchText.toLowerCase().trim();
     if (!query) {
       this.filteredProducts = [];
+      this.activeIndex = -1;
       return;
     }
 
     this.filteredProducts = this.productService.allProducts.filter(p =>
       p.productName.toLowerCase().includes(query)
     );
+    this.activeIndex = this.filteredProducts.length > 0 ? 0 : -1;
 
-    const exactMatch = this.productService.allProducts.find(
-      p => p.productName.toLowerCase() === query
-    );
-    if (exactMatch) {
-      this.addProductToCart(exactMatch);
-      this.searchControl.setValue('', { emitEvent: false });
-      this.filteredProducts = [];
+    // Auto-add when only one product matches
+    if (this.filteredProducts.length === 1) {
+      this.addProductToCart(this.filteredProducts[0]);
+      this.clearSearch();
     }
+  }
+
+  onSearchKeydown(event: KeyboardEvent): void {
+    if (this.filteredProducts.length === 0) {
+      return;
+    }
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.activeIndex = (this.activeIndex + 1) % this.filteredProducts.length;
+        this.scrollActiveItemIntoView();
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.activeIndex =
+          this.activeIndex <= 0
+            ? this.filteredProducts.length - 1
+            : this.activeIndex - 1;
+        this.scrollActiveItemIntoView();
+        break;
+      case 'Enter':
+        event.preventDefault();
+        if (this.activeIndex >= 0 && this.activeIndex < this.filteredProducts.length) {
+          this.selectAutocomplete(this.filteredProducts[this.activeIndex]);
+        }
+        break;
+      case 'Escape':
+        event.preventDefault();
+        this.filteredProducts = [];
+        this.activeIndex = -1;
+        break;
+    }
+  }
+
+  private scrollActiveItemIntoView(): void {
+    setTimeout(() => {
+      const active = this.host.nativeElement.querySelector(
+        '.autocomplete-item.active'
+      ) as HTMLElement | null;
+      active?.scrollIntoView({ block: 'nearest' });
+    });
   }
 
   selectAutocomplete(product: ProductView): void {
     this.addProductToCart(product);
+    this.clearSearch();
+  }
+
+  private clearSearch(): void {
     this.searchControl.setValue('', { emitEvent: false });
     this.filteredProducts = [];
+    this.activeIndex = -1;
   }
 
   addProductToCart(product: ProductView): void {
@@ -74,8 +122,7 @@ export class JournalComponent implements OnInit {
     );
     if (product) {
       this.addProductToCart(product);
-      this.searchControl.setValue('', { emitEvent: false });
-      this.filteredProducts = [];
+      this.clearSearch();
     } else {
       this.addProductRequest.emit();
     }

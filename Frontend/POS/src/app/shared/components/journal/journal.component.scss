@@ -21,13 +21,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px 8px;
+  padding: 4px 16px;
   border-bottom: 1px solid #f1f5f9;
   flex-shrink: 0;
+  min-height: 0;
 }
 
 .customer-name {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   color: #1e293b;
 }
@@ -35,20 +36,21 @@
 .add-customer-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   border: none;
   background: #eff6ff;
   color: #2563eb;
-  padding: 5px 10px;
-  border-radius: 8px;
-  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
+  line-height: 1.2;
 
   mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
   }
 
   &:hover {
@@ -123,8 +125,9 @@
   color: #334155;
   text-align: left;
 
-  &:hover {
-    background: #f8fafc;
+  &:hover,
+  &.active {
+    background: #eff6ff;
   }
 
   .auto-price {

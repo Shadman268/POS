@@ -8,24 +8,28 @@
     </select>
   </div>
 
-  <div class="product-list">
-    <mat-grid-list *ngIf="filteredProducts.length > 0" cols="2" rowHeight="128px" gutterSize="10px">
-      <mat-grid-tile *ngFor="let product of filteredProducts; let i = index">
-        <div
-          class="product-tile"
-          (click)="selectProduct(product)"
-        >
-          <div class="tile-accent" [style.background]="accentColor(i)">
-            <mat-icon>{{ productIcon(product) }}</mat-icon>
-          </div>
-          <div class="tile-body">
-            <span class="name">{{ product.productName }}</span>
-            <span class="stock">Stock: {{ product.stockQuantity ?? 100 }}</span>
-            <span class="price">৳{{ product.price }}</span>
-          </div>
-        </div>
-      </mat-grid-tile>
-    </mat-grid-list>
+  <div class="product-grid">
+    <div
+      class="product-card"
+      *ngFor="let product of filteredProducts"
+      (click)="selectProduct(product)"
+    >
+      <span
+        class="stock-badge"
+        [class.good]="stockLevel(product.stockQuantity ?? 0) === 'good'"
+        [class.low]="stockLevel(product.stockQuantity ?? 0) === 'low'"
+        [class.out]="stockLevel(product.stockQuantity ?? 0) === 'out'"
+      >
+        Stock: {{ product.stockQuantity ?? 0 }}
+      </span>
+
+      <div class="card-info">
+        <span class="name">{{ product.productName }}</span>
+        <span class="generic" *ngIf="product.genericName">{{ product.genericName }}</span>
+      </div>
+
+      <span class="price">৳{{ product.price }}</span>
+    </div>
 
     <div class="empty-grid" *ngIf="filteredProducts.length === 0">
       <mat-icon>inventory_2</mat-icon>

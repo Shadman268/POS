@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public int TenantId { get; set; }
         public required string ProductName { get; set; }
+        public string? GenericName { get; set; }
         public decimal Price { get; set; }
         // Store only the path (not the file itself)
         public string? ImagePath { get; set; }

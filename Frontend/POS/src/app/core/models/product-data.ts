@@ -7,6 +7,7 @@ export interface ProductUpload {
 export interface ProductView {
     id: number;
     productName: string;
+    genericName?: string;
     price: string;
     imagePath: string;
     category?: string;

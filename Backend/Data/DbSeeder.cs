@@ -57,14 +57,14 @@ namespace Backend.Data
             var today = DateTime.Today;
             var samples = new[]
             {
-                new Product { TenantId = tenantId, ProductName = "Napa Extra 500mg", Price = 8, BatchNumber = "NX-2291", ExpiryDate = today.AddDays(12), Category = "Medicine", Brand = "Beximco", StockQuantity = 120, Unit = "Tablet" },
-                new Product { TenantId = tenantId, ProductName = "Seclo 20mg", Price = 12, BatchNumber = "SC-8841", ExpiryDate = today.AddDays(18), Category = "Medicine", Brand = "Square", StockQuantity = 85, Unit = "Tablet" },
-                new Product { TenantId = tenantId, ProductName = "Amodis 400mg", Price = 15, BatchNumber = "AM-1032", ExpiryDate = today.AddDays(21), Category = "Medicine", Brand = "General", StockQuantity = 60, Unit = "Tablet" },
-                new Product { TenantId = tenantId, ProductName = "Fexo 120mg", Price = 10, BatchNumber = "FX-7710", ExpiryDate = today.AddDays(27), Category = "Medicine", Brand = "Incepta", StockQuantity = 95, Unit = "Tablet" },
-                new Product { TenantId = tenantId, ProductName = "Insulin Mixtard", Price = 450, BatchNumber = "IM-0092", ExpiryDate = today.AddDays(29), Category = "Medicine", Brand = "Novo Nordisk", StockQuantity = 24, Unit = "Vial" },
-                new Product { TenantId = tenantId, ProductName = "ORSaline Sachet", Price = 10, Category = "Medicine", Brand = "General", StockQuantity = 200, Unit = "Sachet" },
-                new Product { TenantId = tenantId, ProductName = "Vitamin C 500mg", Price = 20, Category = "Medicine", Brand = "General", StockQuantity = 150, Unit = "Tablet" },
-                new Product { TenantId = tenantId, ProductName = "Digital BP Monitor", Price = 1450, Category = "Equipment", Brand = "Omron", StockQuantity = 12, Unit = "Unit" }
+                new Product { TenantId = tenantId, ProductName = "Napa Extra 500mg", GenericName = "Paracetamol + Caffeine", Price = 12, BatchNumber = "NX-2291", ExpiryDate = today.AddDays(12), Category = "Medicine", Brand = "Beximco", StockQuantity = 86, Unit = "Tablet" },
+                new Product { TenantId = tenantId, ProductName = "Seclo 20mg", GenericName = "Omeprazole", Price = 12, BatchNumber = "SC-8841", ExpiryDate = today.AddDays(18), Category = "Medicine", Brand = "Square", StockQuantity = 3, Unit = "Tablet" },
+                new Product { TenantId = tenantId, ProductName = "Amodis 400mg", GenericName = "Albendazole", Price = 15, BatchNumber = "AM-1032", ExpiryDate = today.AddDays(21), Category = "Medicine", Brand = "General", StockQuantity = 60, Unit = "Tablet" },
+                new Product { TenantId = tenantId, ProductName = "Fexo 120mg", GenericName = "Fexofenadine", Price = 10, BatchNumber = "FX-7710", ExpiryDate = today.AddDays(27), Category = "Medicine", Brand = "Incepta", StockQuantity = 0, Unit = "Tablet" },
+                new Product { TenantId = tenantId, ProductName = "Insulin Mixtard", GenericName = "Insulin Human", Price = 450, BatchNumber = "IM-0092", ExpiryDate = today.AddDays(29), Category = "Medicine", Brand = "Novo Nordisk", StockQuantity = 24, Unit = "Vial" },
+                new Product { TenantId = tenantId, ProductName = "ORSaline Sachet", GenericName = "Oral Rehydration Salts", Price = 10, Category = "Medicine", Brand = "General", StockQuantity = 200, Unit = "Sachet" },
+                new Product { TenantId = tenantId, ProductName = "Vitamin C 500mg", GenericName = "Ascorbic Acid", Price = 20, Category = "Medicine", Brand = "General", StockQuantity = 150, Unit = "Tablet" },
+                new Product { TenantId = tenantId, ProductName = "Digital BP Monitor", GenericName = "Blood Pressure Monitor", Price = 1450, Category = "Equipment", Brand = "Omron", StockQuantity = 12, Unit = "Unit" }
             };
 
             context.Products.AddRange(samples);

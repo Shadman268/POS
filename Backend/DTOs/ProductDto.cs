@@ -6,6 +6,7 @@ namespace Backend.DTOs
     {
         public int Id { get; set; }
         public required string ProductName { get; set; }
+        public string? GenericName { get; set; }
         public decimal Price { get; set; }
 
         [JsonIgnore]

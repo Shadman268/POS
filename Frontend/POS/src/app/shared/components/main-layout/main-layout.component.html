@@ -61,6 +61,16 @@
           <mat-icon>calculate</mat-icon>
         </button>
 
+        <button
+          mat-icon-button
+          class="utility-btn"
+          aria-label="Point of Sale"
+          matTooltip="POS"
+          (click)="goToPos()"
+        >
+          <mat-icon>point_of_sale</mat-icon>
+        </button>
+
         <div class="language-select">
           <mat-icon>language</mat-icon>
           <select [(ngModel)]="selectedLanguage">

@@ -91,6 +91,10 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  goToPos(): void {
+    this.router.navigate(['/pos']);
+  }
+
   logout(): void {
     this.authService.logout();
   }
