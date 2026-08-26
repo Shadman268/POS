@@ -1,0 +1,20 @@
+.page-shell {
+  padding: 24px;
+  height: 100%;
+  overflow: auto;
+}
+
+.page-header {
+  h1 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+  }
+}

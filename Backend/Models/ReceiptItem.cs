@@ -1,4 +1,4 @@
-using Backend.Models;
+using Backend.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -13,12 +13,22 @@ namespace Backend.Models
         [ForeignKey("Receipt")]
         public int ReceiptId { get; set; }
 
-        [Required]
-        [ForeignKey("Product")]
-        public int ProductId { get; set; }
+        public SaleLineType LineType { get; set; } = SaleLineType.Medicine;
+
+        public int? MedicineId { get; set; }
+
+        public int? TenantMedicineId { get; set; }
+
+        public int? MedicineBatchId { get; set; }
 
         [Required]
         public string ProductName { get; set; } = string.Empty;
+
+        public string? GenericName { get; set; }
+
+        public string? BatchNumber { get; set; }
+
+        public DateTime? ExpiryDate { get; set; }
 
         [Required]
         public int Quantity { get; set; }
@@ -31,8 +41,9 @@ namespace Backend.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal Subtotal { get; set; }
 
-        // Navigation properties with foreign key configurations
         public Receipt Receipt { get; set; } = null!;
-        public Product Product { get; set; } = null!;
+        public Medicine? Medicine { get; set; }
+        public TenantMedicine? TenantMedicine { get; set; }
+        public MedicineBatch? MedicineBatch { get; set; }
     }
 }

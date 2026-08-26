@@ -277,12 +277,67 @@ LoginAuditLogs
 ### Product Catalog
 
 ```text
-Products
-ProductCategories
-Brands
-UnitsOfMeasure
-ProductBarcodes
-ProductPrices
-ProductImages
+Medicines                  -- global catalog (~20k), platform-owned, CSV import
+TenantMedicines            -- tenant price + IsStockTracked flag
+MedicineStocks             -- aggregate qty (tier B/C)
+MedicineBatches            -- batch + expiry (tier C)
+StockMovements             -- audit trail
+ReceiptItems               -- sale snapshots (MedicineId, TenantMedicineId, BatchId)
 ```
+
+---
+
+## 11. Pharmacy Medicine Catalog (Implemented)
+
+### Three pharmacy tiers (tenant setting)
+
+Configured from **Settings** in the UI (`PUT /api/settings`):
+
+| Tier | `PharmacyInventoryMode` | Global catalog | Stock | Batch + expiry |
+|------|-------------------------|----------------|-------|----------------|
+| A | `CatalogOnly` | Yes | No | No |
+| B | `StockTracked` | Yes | Selected medicines | No |
+| C | `BatchExpiry` | Yes | Yes | Yes |
+
+### Global catalog import
+
+- ~20,000 medicines uploaded **once** via CSV: `POST /api/medicine/import`
+- Expected columns: `Name`, `GenericName`, `Strength`, `DosageForm`, `Category`, `Brand`, `Unit`, `Barcode`
+- Platform-owned table `Medicines` — no `TenantId`
+
+### Tenant overlay
+
+- `TenantMedicines` stores per-shop **SellingPrice** and **IsStockTracked**
+- Created automatically when cashier sets a price for the first time
+- POS search matches **medicine name** and **generic name**
+
+### Price-on-first-add setting
+
+`Tenant.PromptPriceWhenUnset` (default: true):
+
+- If `SellingPrice` is not set and cashier adds from catalog → API returns `422 RequiresPrice`
+- Cashier enters price → saved on `TenantMedicine` and used for receipt
+- If price already set → item adds directly to sale
+
+Resolve endpoint: `POST /api/product/resolve`  
+Settings endpoint: `GET/PUT /api/settings`
+
+### POS backward compatibility
+
+Existing frontend uses `GET /api/product` — returns `ProductDto` mapped from global catalog + tenant overlay.
+
+- `Id` = `TenantMedicine.Id` when configured, else `1_000_000 + MedicineId`
+- `RequiresPrice` = true when tenant price not set
+
+### Demo tenants
+
+| Shop code | Tier |
+|-----------|------|
+| `demo` | BatchExpiry |
+| `demo-catalog` | CatalogOnly |
+| `demo-stock` | StockTracked |
+
+### Future retail extensibility
+
+Retail shops will use parallel tables (`RetailProducts`) with `ReceiptItems.LineType = RetailProduct`. Medicine and retail share receipt/stock movement patterns but not catalog tables.
 

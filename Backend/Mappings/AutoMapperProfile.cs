@@ -8,14 +8,15 @@ namespace Backend.Mappings
     {
         public AutoMapperProfile()
         {
-            CreateMap<Product, ProductDto>().ReverseMap();
-
-            // Receipt mapping
             CreateMap<Receipt, ReceiptDto>()
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items));
 
-            // ReceiptItem mapping
-            CreateMap<ReceiptItem, ReceiptItemDto>().ReverseMap();
+            CreateMap<ReceiptItem, ReceiptItemDto>()
+                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src =>
+                    src.TenantMedicineId ?? (src.MedicineId.HasValue
+                        ? Backend.Constants.PosCatalogConstants.ToPosItemId(src.MedicineId.Value)
+                        : 0)))
+                .ReverseMap();
         }
     }
 }

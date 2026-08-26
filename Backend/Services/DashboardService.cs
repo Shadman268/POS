@@ -95,17 +95,20 @@ namespace Backend.Services
             var today = DateTime.Today;
             var cutoff = today.AddDays(30);
 
-            var products = await _context.Products
-                .Where(p => p.TenantId == tenantId && p.ExpiryDate != null && p.ExpiryDate <= cutoff)
-                .OrderBy(p => p.ExpiryDate)
+            var batches = await _context.MedicineBatches
+                .AsNoTracking()
+                .Include(b => b.TenantMedicine)
+                    .ThenInclude(tm => tm.Medicine)
+                .Where(b => b.TenantId == tenantId && b.IsActive && b.QuantityOnHand > 0 && b.ExpiryDate <= cutoff)
+                .OrderBy(b => b.ExpiryDate)
                 .Take(8)
                 .ToListAsync();
 
-            return products.Select(p => new ExpiringProductDto
+            return batches.Select(b => new ExpiringProductDto
             {
-                ProductName = p.ProductName,
-                BatchNumber = p.BatchNumber ?? "N/A",
-                DaysUntilExpiry = Math.Max(0, (p.ExpiryDate!.Value.Date - today).Days)
+                ProductName = b.TenantMedicine.Medicine.Name,
+                BatchNumber = b.BatchNumber,
+                DaysUntilExpiry = Math.Max(0, (b.ExpiryDate.Date - today).Days)
             }).ToList();
         }
 

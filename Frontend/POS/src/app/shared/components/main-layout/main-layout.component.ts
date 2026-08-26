@@ -4,11 +4,17 @@ import { AuthService } from '../../../core/services/auth.service';
 import { User } from '../../../core/models/user';
 import { filter, Subscription } from 'rxjs';
 
+interface NavChild {
+  label: string;
+  route: string;
+}
+
 interface NavItem {
   label: string;
   icon: string;
   route?: string;
   disabled?: boolean;
+  children?: NavChild[];
 }
 
 @Component({
@@ -23,6 +29,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   currentTime = '';
   selectedLanguage = 'English';
   languages = ['English', 'Bengali'];
+  expandedMenus = new Set<string>();
 
   private routerSub?: Subscription;
   private clockInterval?: ReturnType<typeof setInterval>;
@@ -30,7 +37,14 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
     { label: 'Point of Sale', icon: 'point_of_sale', route: '/pos' },
-    { label: 'Products', icon: 'medication', disabled: true },
+    {
+      label: 'Products',
+      icon: 'medication',
+      children: [
+        { label: 'All Products', route: '/products' },
+        { label: 'Catalog', route: '/products/catalog' }
+      ]
+    },
     { label: 'Inventory', icon: 'inventory_2', disabled: true },
     { label: 'Purchases', icon: 'shopping_basket', disabled: true },
     { label: 'Customers', icon: 'people', disabled: true },
@@ -57,9 +71,15 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     this.updateClock();
     this.clockInterval = setInterval(() => this.updateClock(), 1000);
 
+    this.syncExpandedMenus(this.router.url);
+
     this.routerSub = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(() => this.onNavClick());
+      .subscribe((event) => {
+        const navEnd = event as NavigationEnd;
+        this.syncExpandedMenus(navEnd.urlAfterRedirects);
+        this.onNavClick();
+      });
   }
 
   ngOnDestroy(): void {
@@ -91,12 +111,43 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  toggleSubmenu(item: NavItem): void {
+    if (this.sidebarCollapsed) {
+      this.sidebarCollapsed = false;
+      this.expandedMenus.add(item.label);
+      return;
+    }
+
+    if (this.expandedMenus.has(item.label)) {
+      this.expandedMenus.delete(item.label);
+    } else {
+      this.expandedMenus.add(item.label);
+    }
+  }
+
+  isSubmenuExpanded(item: NavItem): boolean {
+    return this.expandedMenus.has(item.label);
+  }
+
+  isNavGroupActive(item: NavItem): boolean {
+    if (!item.children?.length) {
+      return false;
+    }
+    return item.children.some(child => this.router.url.startsWith(child.route));
+  }
+
   goToPos(): void {
     this.router.navigate(['/pos']);
   }
 
   logout(): void {
     this.authService.logout();
+  }
+
+  private syncExpandedMenus(url: string): void {
+    if (url.startsWith('/products')) {
+      this.expandedMenus.add('Products');
+    }
   }
 
   private updateClock(): void {

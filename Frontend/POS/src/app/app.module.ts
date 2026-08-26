@@ -29,6 +29,8 @@ import { LoginComponent } from './shared/components/login/login.component';
 import { RegisterComponent } from './shared/components/register/register.component';
 import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
 import { DashboardComponent } from './shared/components/dashboard/dashboard.component';
+import { AllProductsComponent } from './shared/components/all-products/all-products.component';
+import { CatalogComponent } from './shared/components/catalog/catalog.component';
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
 
 @NgModule({
@@ -42,7 +44,9 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     LoginComponent,
     RegisterComponent,
     MainLayoutComponent,
-    DashboardComponent
+    DashboardComponent,
+    AllProductsComponent,
+    CatalogComponent
   ],
   imports: [
     BrowserModule,

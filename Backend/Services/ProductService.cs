@@ -1,32 +1,25 @@
-﻿using AutoMapper;
-using Backend.DTOs;
-using Backend.Repositories.Interfaces;
+﻿using Backend.DTOs;
 using Backend.Services.Interfaces;
-using Backend.Models;
 
 namespace Backend.Services
 {
     public class ProductService : IProductService
     {
-        private readonly IProductRepository _repository;
-        private readonly IMapper _mapper;
-        public ProductService(IProductRepository repository, IMapper mapper)
+        private readonly IPosCatalogService _posCatalogService;
+
+        public ProductService(IPosCatalogService posCatalogService)
         {
-            _repository = repository;
-            _mapper = mapper;
+            _posCatalogService = posCatalogService;
         }
 
-        public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
+        public Task<IEnumerable<ProductDto>> GetAllProductsAsync(string? search = null, string? category = null, string? brand = null)
         {
-            var products = await _repository.GetAllProductsAsync();
-            return _mapper.Map<IEnumerable<ProductDto>>(products);
+            return _posCatalogService.GetPosCatalogAsync(search, category, brand);
         }
 
-        public async Task<Product> CreateProductAsync(Product product)
+        public Task<ResolvePosItemResponse> ResolvePosItemAsync(ResolvePosItemRequest request)
         {
-            return await _repository.CreateProductAsync(product);
+            return _posCatalogService.ResolvePosItemAsync(request);
         }
-
-
     }
 }

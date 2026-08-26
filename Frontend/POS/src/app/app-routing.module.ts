@@ -5,6 +5,8 @@ import { LoginComponent } from './shared/components/login/login.component';
 import { RegisterComponent } from './shared/components/register/register.component';
 import { DashboardComponent } from './shared/components/dashboard/dashboard.component';
 import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
+import { AllProductsComponent } from './shared/components/all-products/all-products.component';
+import { CatalogComponent } from './shared/components/catalog/catalog.component';
 import { AuthGuard } from './core/guards/auth.guard';
 
 const routes: Routes = [
@@ -24,6 +26,16 @@ const routes: Routes = [
         path: 'pos',
         component: PosUiComponent,
         data: { title: 'POS Terminal' }
+      },
+      {
+        path: 'products',
+        component: AllProductsComponent,
+        data: { title: 'All Products' }
+      },
+      {
+        path: 'products/catalog',
+        component: CatalogComponent,
+        data: { title: 'Catalog' }
       },
       {
         path: '',

@@ -154,6 +154,58 @@
   }
 }
 
+.nav-group-header {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+
+  .nav-label {
+    flex: 1;
+  }
+
+  .expand-icon {
+    margin-left: auto;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #64748b;
+  }
+
+  &.expanded {
+    color: #e2e8f0;
+  }
+}
+
+.nav-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 4px;
+  padding-left: 14px;
+}
+
+.nav-subitem {
+  display: block;
+  padding: 9px 14px 9px 32px;
+  border-radius: 8px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+  }
+
+  &.active {
+    background: rgba(37, 99, 235, 0.12);
+    color: #60a5fa;
+  }
+}
+
 .main-content {
   flex: 1;
   display: flex;

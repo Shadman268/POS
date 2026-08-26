@@ -1,11 +1,7 @@
 ﻿using Backend.DTOs;
-using Backend.Models;
-using Backend.Services;
 using Backend.Services.Interfaces;
-using Backend.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 
 namespace Backend.Controllers
 {
@@ -15,59 +11,43 @@ namespace Backend.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
-        private readonly IHubContext<ProductHub> _hubContext;
 
-        public ProductController(IProductService service, IHubContext<ProductHub> hubContext)
+        public ProductController(IProductService productService)
         {
-            _productService = service;
-            _hubContext = hubContext;
+            _productService = productService;
         }
 
+        /// <summary>
+        /// Backward-compatible POS catalog endpoint. Search matches medicine name and generic name.
+        /// </summary>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductDto>>> GetAllProducts()
+        public async Task<ActionResult<IEnumerable<ProductDto>>> GetAllProducts(
+            [FromQuery] string? search,
+            [FromQuery] string? category,
+            [FromQuery] string? brand)
         {
-            var products = await _productService.GetAllProductsAsync();
+            var products = await _productService.GetAllProductsAsync(search, category, brand);
             return Ok(products);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<Product>> CreateProduct([FromForm] ProductDto productDto)
+        /// <summary>
+        /// Resolve adding a medicine to the sale cart. Returns RequiresPrice when tenant price is unset.
+        /// </summary>
+        [HttpPost("resolve")]
+        public async Task<ActionResult<ResolvePosItemResponse>> ResolveProduct([FromBody] ResolvePosItemRequest request)
         {
-            System.Diagnostics.Debug.WriteLine(productDto);
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var product = new Product
+            var result = await _productService.ResolvePosItemAsync(request);
+            if (!result.Success && result.RequiresPrice)
             {
-                ProductName = productDto.ProductName,
-                Price = productDto.Price
-            };
-
-            // Handle file upload
-            if (productDto.Image != null)
-            {
-                var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
-                if (!Directory.Exists(uploadDir))
-                    Directory.CreateDirectory(uploadDir);
-
-                var filePath = Path.Combine(uploadDir, productDto.Image.FileName);
-
-                using var stream = new FileStream(filePath, FileMode.Create);
-                await productDto.Image.CopyToAsync(stream);
-
-                // Save relative path in entity (for DB)
-                product.ImagePath = Path.Combine("Uploads", productDto.Image.FileName).Replace("\\", "/");
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, result);
             }
 
-            // Save entity (with ImagePath) in DB
-            var createdProduct = await _productService.CreateProductAsync(product);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
 
-            // Broadcast the new product to all connected clients
-            await _hubContext.Clients.All.SendAsync("ProductAdded", createdProduct);
-
-            return CreatedAtAction(nameof(GetAllProducts), new { id = createdProduct.Id }, createdProduct);
+            return Ok(result);
         }
-
-
     }
 }
