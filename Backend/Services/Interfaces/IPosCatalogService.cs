@@ -13,6 +13,7 @@ namespace Backend.Services.Interfaces
     {
         Task<MedicineImportResultDto> ImportFromCsvAsync(Stream csvStream);
         Task<PagedMedicineResultDto> GetMedicinesAsync(int page, int pageSize, string? search = null);
+        Task DeleteMedicineAsync(int id);
     }
 
     public interface ITenantSettingsService

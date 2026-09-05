@@ -48,17 +48,29 @@
         <thead>
           <tr>
             <th *ngFor="let col of columns">{{ col.label }}</th>
+            <th class="actions-col">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="loading">
-            <td [attr.colspan]="columns.length" class="state-cell">
+            <td [attr.colspan]="columns.length + 1" class="state-cell">
               <mat-spinner diameter="28"></mat-spinner>
               <span>Loading catalog...</span>
             </td>
           </tr>
           <tr *ngFor="let medicine of medicines">
             <td *ngFor="let col of columns">{{ displayValue(medicine, col.key) }}</td>
+            <td class="actions-col">
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="deleteMedicine(medicine)"
+                [disabled]="deletingId === medicine.id"
+                aria-label="Delete medicine"
+              >
+                <mat-icon>{{ deletingId === medicine.id ? 'hourglass_top' : 'delete' }}</mat-icon>
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>

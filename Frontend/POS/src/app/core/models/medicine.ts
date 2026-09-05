@@ -36,8 +36,5 @@ export const MEDICINE_TABLE_COLUMNS: { key: keyof Medicine; label: string }[] = 
   { key: 'category', label: 'Category' },
   { key: 'brand', label: 'Brand' },
   { key: 'unit', label: 'Unit' },
-  { key: 'barcode', label: 'Barcode' },
-  { key: 'isActive', label: 'Active' },
-  { key: 'createdAtUtc', label: 'Created At' },
-  { key: 'updatedAtUtc', label: 'Updated At' }
+  { key: 'barcode', label: 'Barcode' }
 ];

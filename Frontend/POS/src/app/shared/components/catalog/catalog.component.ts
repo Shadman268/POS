@@ -18,6 +18,7 @@ export class CatalogComponent implements OnInit {
   search = '';
   loading = false;
   importing = false;
+  deletingId: number | null = null;
   importMessage = '';
   importError = '';
 
@@ -62,9 +63,13 @@ export class CatalogComponent implements OnInit {
     this.catalogService.importCsv(file).subscribe({
       next: (result) => {
         this.importing = false;
-        this.importMessage = `Import complete: ${result.inserted} inserted, ${result.updated} updated, ${result.skipped} skipped.`;
-        if (result.errors?.length) {
-          this.importError = result.errors.slice(0, 3).join(' ');
+        const hasRowErrors = result.errors?.length > 0;
+        if (hasRowErrors && result.inserted === 0 && result.updated === 0) {
+          this.importMessage = '';
+          this.importError = result.errors.join(' ');
+        } else {
+          this.importMessage = `Import complete: ${result.inserted} inserted, ${result.updated} updated, ${result.skipped} skipped.`;
+          this.importError = hasRowErrors ? result.errors.slice(0, 5).join(' ') : '';
         }
         input.value = '';
         this.page = 1;
@@ -127,5 +132,28 @@ export class CatalogComponent implements OnInit {
       return new Date(String(value)).toLocaleString();
     }
     return String(value);
+  }
+
+  deleteMedicine(medicine: Medicine): void {
+    if (!confirm(`Delete "${medicine.name}" from the global catalog?`)) {
+      return;
+    }
+
+    this.deletingId = medicine.id;
+    this.importError = '';
+
+    this.catalogService.deleteMedicine(medicine.id).subscribe({
+      next: () => {
+        this.deletingId = null;
+        if (this.medicines.length === 1 && this.page > 1) {
+          this.page--;
+        }
+        this.loadMedicines();
+      },
+      error: (err) => {
+        this.deletingId = null;
+        this.importError = err.error?.message || 'Failed to delete medicine.';
+      }
+    });
   }
 }

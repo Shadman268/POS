@@ -43,5 +43,19 @@ namespace Backend.Controllers
             var result = await _catalogService.GetMedicinesAsync(page, pageSize, search);
             return Ok(result);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMedicine(int id)
+        {
+            try
+            {
+                await _catalogService.DeleteMedicineAsync(id);
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
     }
 }

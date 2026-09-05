@@ -14,12 +14,13 @@
       <mat-icon>search</mat-icon>
       <input
         type="text"
-        placeholder="Type product name to add..."
+        placeholder="Search medicine name, generic, or barcode..."
         [formControl]="searchControl"
         (keydown)="onSearchKeydown($event)"
         autocomplete="off"
       />
-      <div class="autocomplete-dropdown" *ngIf="filteredProducts.length > 0">
+      <div class="autocomplete-dropdown" *ngIf="filteredProducts.length > 0 || searchLoading">
+        <div class="autocomplete-loading" *ngIf="searchLoading">Searching catalog...</div>
         <button
           type="button"
           class="autocomplete-item"
@@ -28,7 +29,10 @@
           (click)="selectAutocomplete(product)"
           (mouseenter)="activeIndex = i"
         >
-          <span>{{ product.productName }}</span>
+          <span class="auto-name">
+            {{ product.productName }}
+            <small *ngIf="product.genericName">{{ product.genericName }}</small>
+          </span>
           <span class="auto-price">৳{{ product.price }}</span>
         </button>
       </div>

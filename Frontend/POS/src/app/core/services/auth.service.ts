@@ -5,6 +5,7 @@ import { map, catchError, tap, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { LoginRequest, LoginResponse, User, UserRole, RegisterRequest, RegisterResponse, RefreshTokenResponse } from '../../core/models/user';
 import { ApiConfigService } from './api-config.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
@@ -30,11 +31,12 @@ export class AuthService {
         );
         this.currentUser = this.currentUserSubject.asObservable();
 
-        // On app init, try to refresh token if user exists (page refresh scenario)
-        if (storedUser) {
+        if (environment.disableAuth) {
+            this.bootstrapDevSession();
+        } else if (storedUser) {
+            // On app init, try to refresh token if user exists (page refresh scenario)
             this.refreshToken().subscribe({
                 error: () => {
-                    // Refresh failed, clear user
                     this.clearAuthState();
                 }
             });
@@ -118,10 +120,28 @@ export class AuthService {
         this.accessTokenSubject.next(null);
         localStorage.removeItem('currentUser');
         this.currentUserSubject.next(null);
-        this.router.navigate(['/login']);
+        if (!environment.disableAuth) {
+            this.router.navigate(['/login']);
+        }
+    }
+
+    bootstrapDevSession(): void {
+        const devUser: User = {
+            id: '1',
+            username: 'dev',
+            role: UserRole.Admin,
+            tenantId: '1',
+            shopCode: 'demo',
+            tenantName: 'Demo Pharmacy'
+        };
+        localStorage.setItem('currentUser', JSON.stringify(devUser));
+        this.currentUserSubject.next(devUser);
     }
 
     isAuthenticated(): boolean {
+        if (environment.disableAuth) {
+            return !!this.currentUserValue;
+        }
         return !!this.currentToken && !!this.currentUserValue;
     }
 

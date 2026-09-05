@@ -28,12 +28,15 @@ namespace Backend.Services
                 .AsNoTracking()
                 .Where(m => m.IsActive);
 
-            if (!string.IsNullOrWhiteSpace(search))
+            var hasSearch = !string.IsNullOrWhiteSpace(search);
+
+            if (hasSearch)
             {
-                var term = search.Trim().ToLower();
+                var term = search!.Trim().ToLower();
                 query = query.Where(m =>
                     m.Name.ToLower().Contains(term) ||
-                    (m.GenericName != null && m.GenericName.ToLower().Contains(term)));
+                    (m.GenericName != null && m.GenericName.ToLower().Contains(term)) ||
+                    (m.Barcode != null && m.Barcode.ToLower().Contains(term)));
             }
 
             if (!string.IsNullOrWhiteSpace(category) && category != "All Category")
@@ -46,10 +49,27 @@ namespace Backend.Services
                 query = query.Where(m => m.Brand == brand);
             }
 
-            var medicines = await query
-                .OrderBy(m => m.Name)
-                .Take(500)
-                .ToListAsync();
+            List<Medicine> medicines;
+            if (hasSearch)
+            {
+                var term = search!.Trim().ToLower();
+                var candidates = await query.Take(250).ToListAsync();
+                medicines = candidates
+                    .Select(m => (Medicine: m, Score: ScoreMedicineMatch(m, term)))
+                    .Where(x => x.Score > 0)
+                    .OrderByDescending(x => x.Score)
+                    .ThenBy(x => x.Medicine.Name)
+                    .Take(25)
+                    .Select(x => x.Medicine)
+                    .ToList();
+            }
+            else
+            {
+                medicines = await query
+                    .OrderBy(m => m.Name)
+                    .Take(500)
+                    .ToListAsync();
+            }
 
             var medicineIds = medicines.Select(m => m.Id).ToList();
             var tenantMedicines = await _context.TenantMedicines
@@ -62,6 +82,60 @@ namespace Backend.Services
             var tenantMap = tenantMedicines.ToDictionary(tm => tm.MedicineId);
 
             return medicines.Select(m => MapToProductDto(m, tenantMap.GetValueOrDefault(m.Id), tenant.InventoryMode));
+        }
+
+        private static int ScoreMedicineMatch(Medicine medicine, string term)
+        {
+            var name = medicine.Name.ToLowerInvariant();
+            var generic = medicine.GenericName?.ToLowerInvariant() ?? string.Empty;
+            var barcode = medicine.Barcode?.ToLowerInvariant() ?? string.Empty;
+
+            if (name == term)
+            {
+                return 1000;
+            }
+
+            if (barcode == term)
+            {
+                return 950;
+            }
+
+            if (generic == term)
+            {
+                return 900;
+            }
+
+            if (name.StartsWith(term, StringComparison.Ordinal))
+            {
+                return 800;
+            }
+
+            if (generic.StartsWith(term, StringComparison.Ordinal))
+            {
+                return 700;
+            }
+
+            if (barcode.StartsWith(term, StringComparison.Ordinal))
+            {
+                return 650;
+            }
+
+            if (name.Contains(term, StringComparison.Ordinal))
+            {
+                return 600;
+            }
+
+            if (generic.Contains(term, StringComparison.Ordinal))
+            {
+                return 500;
+            }
+
+            if (barcode.Contains(term, StringComparison.Ordinal))
+            {
+                return 400;
+            }
+
+            return 0;
         }
 
         public async Task<ResolvePosItemResponse> ResolvePosItemAsync(ResolvePosItemRequest request)

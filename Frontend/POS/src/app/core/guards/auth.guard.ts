@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { UserRole } from '../models/user';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
@@ -14,6 +15,13 @@ export class AuthGuard implements CanActivate {
     ) { }
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+        if (environment.disableAuth) {
+            if (!this.authService.currentUserValue) {
+                this.authService.bootstrapDevSession();
+            }
+            return true;
+        }
+
         const currentUser = this.authService.currentUserValue;
 
         if (currentUser) {

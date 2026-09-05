@@ -113,9 +113,17 @@
   overflow-y: auto;
 }
 
+.autocomplete-loading {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #64748b;
+}
+
 .autocomplete-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   width: 100%;
   padding: 10px 14px;
   border: none;
@@ -130,9 +138,22 @@
     background: #eff6ff;
   }
 
+  .auto-name {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    small {
+      font-size: 11px;
+      color: #64748b;
+    }
+  }
+
   .auto-price {
     color: #64748b;
     font-weight: 600;
+    flex-shrink: 0;
   }
 }
 

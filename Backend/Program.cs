@@ -1,5 +1,6 @@
 ﻿using Backend.Data;
 using Backend.Mappings;
+using Backend.Middleware;
 using Backend.Repositories;
 using Backend.Repositories.Interfaces;
 using Backend.Services;
@@ -24,6 +25,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IPosCatalogService, PosCatalogService>();
 builder.Services.AddScoped<IMedicineCatalogService, MedicineCatalogService>();
 builder.Services.AddScoped<ITenantSettingsService, TenantSettingsService>();
+builder.Services.AddScoped<ITenantMedicineService, TenantMedicineService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
 builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -96,6 +98,7 @@ app.UseRouting();
 app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthentication();
+app.UseMiddleware<DevelopmentAuthMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

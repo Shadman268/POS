@@ -1,6 +1,10 @@
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { CartLine, ProductView } from 'src/app/core/models/product-data';
+import { ApiConfigService } from '../../core/services/api-config.service';
 import { SignalrService } from './signalr.service';
 
 @Injectable({
@@ -13,10 +17,21 @@ export class ProductService {
   private cartChanged = new Subject<void>();
   cartChanged$ = this.cartChanged.asObservable();
 
-  constructor(private signalrService: SignalrService) {
+  constructor(
+    private http: HttpClient,
+    private api: ApiConfigService,
+    private signalrService: SignalrService
+  ) {
     this.signalrService.productAdded$.subscribe((product: ProductView) => {
       this.allProducts.push(this.normalizeProduct(product));
     });
+  }
+
+  searchProducts(query: string): Observable<ProductView[]> {
+    const params = new HttpParams().set('search', query.trim());
+    return this.http.get<ProductView[]>(this.api.url('Product'), { params }).pipe(
+      map(products => products.map(p => this.normalizeProduct(p)))
+    );
   }
 
   setProducts(products: ProductView[]): void {
@@ -73,6 +88,7 @@ export class ProductService {
   private normalizeProduct(product: ProductView): ProductView {
     return {
       ...product,
+      price: product.price != null ? String(product.price) : '0',
       category: product.category || 'Medicine',
       brand: product.brand || 'General',
       stockQuantity: product.stockQuantity ?? 100,

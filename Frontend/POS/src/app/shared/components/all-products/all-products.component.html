@@ -1,6 +1,133 @@
 <div class="page-shell">
   <div class="page-header">
-    <h1>All Products</h1>
-    <p>Medicines configured for your pharmacy with prices and stock tracking.</p>
+    <div class="header-text">
+      <h1>All Products</h1>
+      <p>Global catalog medicines with tenant-specific cost price, selling price, stock, and tracking.</p>
+    </div>
+    <div class="header-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        class="add-btn"
+        (click)="openAddProductDialog()"
+        [disabled]="saving"
+      >
+        <mat-icon>{{ saving ? 'hourglass_top' : 'add' }}</mat-icon>
+        {{ saving ? 'Saving...' : 'Add Product' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="feedback success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="feedback error" *ngIf="error">{{ error }}</div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <mat-icon>search</mat-icon>
+      <input
+        type="text"
+        placeholder="Search name, generic name, or barcode..."
+        [(ngModel)]="search"
+        (keyup.enter)="onSearch()"
+      />
+      <button mat-stroked-button (click)="onSearch()">Search</button>
+    </div>
+    <span class="record-count" *ngIf="hasData">{{ totalCount | number }} medicines</span>
+  </div>
+
+  <div class="table-card">
+    <div class="table-wrap">
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th *ngFor="let col of readonlyColumns">{{ col.label }}</th>
+            <th>Cost Price</th>
+            <th>Selling Price</th>
+            <th>Stock</th>
+            <th>Track Stock</th>
+            <th class="actions-col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td [attr.colspan]="readonlyColumns.length + 5" class="state-cell">
+              <mat-spinner diameter="28"></mat-spinner>
+              <span>Loading products...</span>
+            </td>
+          </tr>
+          <tr *ngFor="let product of products">
+            <td *ngFor="let col of readonlyColumns">{{ displayValue(product, col.key) }}</td>
+            <td class="editable-cell">
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                [(ngModel)]="product.costPrice"
+                placeholder="Cost"
+              />
+            </td>
+            <td class="editable-cell">
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                [(ngModel)]="product.sellingPrice"
+                placeholder="Price"
+              />
+            </td>
+            <td class="editable-cell">
+              <input
+                type="number"
+                min="0"
+                step="1"
+                [(ngModel)]="product.stockQuantity"
+                [disabled]="!product.isStockTracked"
+                placeholder="0"
+              />
+            </td>
+            <td class="editable-cell center">
+              <mat-checkbox [(ngModel)]="product.isStockTracked"></mat-checkbox>
+            </td>
+            <td class="actions-col">
+              <button
+                mat-icon-button
+                color="primary"
+                class="done-btn"
+                (click)="saveProduct(product)"
+                [disabled]="!isProductDirty(product) || savingMedicineId === product.medicineId"
+                aria-label="Save product settings"
+                matTooltip="Save changes"
+              >
+                <mat-icon>{{ savingMedicineId === product.medicineId ? 'hourglass_top' : 'done' }}</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="resetProduct(product)"
+                [disabled]="!hasTenantSettings(product) || resettingMedicineId === product.medicineId"
+                aria-label="Clear tenant settings"
+                matTooltip="Clear tenant settings"
+              >
+                <mat-icon>{{ resettingMedicineId === product.medicineId ? 'hourglass_top' : 'delete' }}</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="hasData && !loading">
+      <div class="page-size">
+        <label>Rows</label>
+        <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+        </select>
+      </div>
+      <div class="page-controls">
+        <button mat-stroked-button (click)="goToPage(page - 1)" [disabled]="page <= 1">Previous</button>
+        <span>Page {{ page }} of {{ totalPages }}</span>
+        <button mat-stroked-button (click)="goToPage(page + 1)" [disabled]="page >= totalPages">Next</button>
+      </div>
+    </div>
   </div>
 </div>

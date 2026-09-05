@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { timeout } from 'rxjs/operators';
 import { MedicineImportResult, PagedMedicineResult } from '../../core/models/medicine';
 import { ApiConfigService } from '../../core/services/api-config.service';
 
@@ -28,6 +29,11 @@ export class MedicineCatalogService {
   importCsv(file: File): Observable<MedicineImportResult> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<MedicineImportResult>(this.api.url('Medicine/import'), formData);
+    return this.http.post<MedicineImportResult>(this.api.url('Medicine/import'), formData)
+      .pipe(timeout(600000));
+  }
+
+  deleteMedicine(id: number): Observable<void> {
+    return this.http.delete<void>(this.api.url(`Medicine/${id}`));
   }
 }

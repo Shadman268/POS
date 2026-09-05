@@ -23,6 +23,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AddProductDialogComponent } from './shared/dialogs/add-product-dialog/add-product-dialog.component';
+import { AddTenantProductDialogComponent } from './shared/dialogs/add-tenant-product-dialog/add-tenant-product-dialog.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { LoginComponent } from './shared/components/login/login.component';
@@ -41,6 +42,7 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     JournalComponent,
     ProductViewComponent,
     AddProductDialogComponent,
+    AddTenantProductDialogComponent,
     LoginComponent,
     RegisterComponent,
     MainLayoutComponent,

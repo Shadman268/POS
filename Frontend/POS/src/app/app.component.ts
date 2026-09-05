@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,16 @@ export class AppComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Check if user is authenticated on app initialization
+    if (environment.disableAuth) {
+      if (!this.authService.isAuthenticated()) {
+        this.authService.bootstrapDevSession();
+      }
+      if (this.router.url === '/login' || this.router.url === '/register') {
+        this.router.navigate(['/dashboard']);
+      }
+      return;
+    }
+
     if (!this.authService.isAuthenticated() && this.router.url !== '/login') {
       this.router.navigate(['/login']);
     }

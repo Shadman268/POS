@@ -63,15 +63,20 @@ namespace Backend.Data
         private static async Task SeedDemoTenantDataAsync(AppDbContext context)
         {
             var medicines = await context.Medicines.ToListAsync();
-            var medicineMap = medicines.ToDictionary(m => m.Name, m => m);
             var today = DateTime.Today;
 
-            await SeedBatchTenantAsync(context, "demo", medicineMap, today);
-            await SeedCatalogTenantAsync(context, "demo-catalog", medicineMap);
-            await SeedStockTenantAsync(context, "demo-stock", medicineMap);
+            await SeedBatchTenantAsync(context, "demo", medicines, today);
+            await SeedCatalogTenantAsync(context, "demo-catalog", medicines);
+            await SeedStockTenantAsync(context, "demo-stock", medicines);
         }
 
-        private static async Task SeedBatchTenantAsync(AppDbContext context, string shopCode, Dictionary<string, Medicine> medicineMap, DateTime today)
+        private static Medicine? FindMedicineByName(IEnumerable<Medicine> medicines, string name)
+        {
+            return medicines.FirstOrDefault(m =>
+                string.Equals(m.Name, name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static async Task SeedBatchTenantAsync(AppDbContext context, string shopCode, List<Medicine> medicines, DateTime today)
         {
             var tenant = await context.Tenants.FirstAsync(t => t.ShopCode == shopCode);
             if (await context.TenantMedicines.AnyAsync(tm => tm.TenantId == tenant.Id))
@@ -93,7 +98,8 @@ namespace Backend.Data
 
             foreach (var cfg in configs)
             {
-                if (!medicineMap.TryGetValue(cfg.name, out var medicine))
+                var medicine = FindMedicineByName(medicines, cfg.name);
+                if (medicine == null)
                 {
                     continue;
                 }
@@ -136,7 +142,7 @@ namespace Backend.Data
             await context.SaveChangesAsync();
         }
 
-        private static async Task SeedCatalogTenantAsync(AppDbContext context, string shopCode, Dictionary<string, Medicine> medicineMap)
+        private static async Task SeedCatalogTenantAsync(AppDbContext context, string shopCode, List<Medicine> medicines)
         {
             var tenant = await context.Tenants.FirstAsync(t => t.ShopCode == shopCode);
             if (await context.TenantMedicines.AnyAsync(tm => tm.TenantId == tenant.Id))
@@ -152,9 +158,10 @@ namespace Backend.Data
                 ["Amodis 400mg"] = 15
             };
 
-            foreach (var medicine in medicineMap.Values)
+            foreach (var (name, price) in withPrice)
             {
-                if (!withPrice.TryGetValue(medicine.Name, out var price))
+                var medicine = FindMedicineByName(medicines, name);
+                if (medicine == null)
                 {
                     continue;
                 }
@@ -173,7 +180,7 @@ namespace Backend.Data
             await context.SaveChangesAsync();
         }
 
-        private static async Task SeedStockTenantAsync(AppDbContext context, string shopCode, Dictionary<string, Medicine> medicineMap)
+        private static async Task SeedStockTenantAsync(AppDbContext context, string shopCode, List<Medicine> medicines)
         {
             var tenant = await context.Tenants.FirstAsync(t => t.ShopCode == shopCode);
             if (await context.TenantMedicines.AnyAsync(tm => tm.TenantId == tenant.Id))
@@ -193,7 +200,8 @@ namespace Backend.Data
 
             foreach (var cfg in configs)
             {
-                if (!medicineMap.TryGetValue(cfg.name, out var medicine))
+                var medicine = FindMedicineByName(medicines, cfg.name);
+                if (medicine == null)
                 {
                     continue;
                 }
