@@ -81,7 +81,7 @@ namespace Backend.Services
 
             var tenantMap = tenantMedicines.ToDictionary(tm => tm.MedicineId);
 
-            return medicines.Select(m => MapToProductDto(m, tenantMap.GetValueOrDefault(m.Id), tenant.InventoryMode));
+            return medicines.Select(m => MapToProductDto(m, tenantMap.GetValueOrDefault(m.Id), tenant));
         }
 
         private static int ScoreMedicineMatch(Medicine medicine, string term)
@@ -165,7 +165,7 @@ namespace Backend.Services
                         Success = false,
                         RequiresPrice = true,
                         Message = "Selling price is not set. Please enter a price.",
-                        Item = MapToProductDto(medicine, tenantMedicine, tenant.InventoryMode)
+                        Item = MapToProductDto(medicine, tenantMedicine, tenant)
                     };
                 }
 
@@ -183,7 +183,7 @@ namespace Backend.Services
                     Success = false,
                     RequiresPrice = true,
                     Message = "Selling price is required.",
-                    Item = MapToProductDto(medicine, tenantMedicine, tenant.InventoryMode)
+                    Item = MapToProductDto(medicine, tenantMedicine, tenant)
                 };
             }
 
@@ -196,7 +196,7 @@ namespace Backend.Services
                     {
                         Success = false,
                         Message = stockError,
-                        Item = MapToProductDto(medicine, tenantMedicine, tenant.InventoryMode)
+                        Item = MapToProductDto(medicine, tenantMedicine, tenant)
                     };
                 }
             }
@@ -204,23 +204,30 @@ namespace Backend.Services
             return new ResolvePosItemResponse
             {
                 Success = true,
-                Item = MapToProductDto(medicine, tenantMedicine, tenant.InventoryMode)
+                Item = MapToProductDto(medicine, tenantMedicine, tenant)
             };
         }
 
-        internal static ProductDto MapToProductDto(Medicine medicine, TenantMedicine? tenantMedicine, PharmacyInventoryMode mode)
+        internal static bool ShouldTrackStock(Tenant tenant, TenantMedicine? tenantMedicine)
+        {
+            return tenant.MaintainStock
+                && tenant.InventoryMode != PharmacyInventoryMode.CatalogOnly
+                && tenantMedicine?.IsStockTracked == true;
+        }
+
+        internal static ProductDto MapToProductDto(Medicine medicine, TenantMedicine? tenantMedicine, Tenant tenant)
         {
             var hasPrice = tenantMedicine?.SellingPrice is > 0;
-            var isStockTracked = tenantMedicine?.IsStockTracked == true && mode != PharmacyInventoryMode.CatalogOnly;
+            var isStockTracked = ShouldTrackStock(tenant, tenantMedicine);
 
             var stockQty = 0;
             if (isStockTracked && tenantMedicine != null)
             {
-                stockQty = mode == PharmacyInventoryMode.BatchExpiry
+                stockQty = tenant.InventoryMode == PharmacyInventoryMode.BatchExpiry
                     ? tenantMedicine.Batches.Where(b => b.IsActive).Sum(b => b.QuantityOnHand)
                     : tenantMedicine.Stock?.QuantityOnHand ?? 0;
             }
-            else if (mode == PharmacyInventoryMode.CatalogOnly)
+            else if (!isStockTracked)
             {
                 stockQty = 999;
             }
@@ -251,7 +258,13 @@ namespace Backend.Services
             {
                 var medicineId = PosCatalogConstants.ToMedicineId(posItemId);
                 var medicine = await _context.Medicines.FirstOrDefaultAsync(m => m.Id == medicineId && m.IsActive);
-                return (medicine, null);
+                if (medicine == null)
+                {
+                    return (null, null);
+                }
+
+                var overlay = await LoadTenantMedicineAsync(tenantId, medicineId);
+                return (medicine, overlay);
             }
 
             var tenantMedicine = await _context.TenantMedicines
@@ -261,6 +274,16 @@ namespace Backend.Services
                 .FirstOrDefaultAsync(tm => tm.TenantId == tenantId && tm.Id == posItemId);
 
             return (tenantMedicine?.Medicine, tenantMedicine);
+        }
+
+        private async Task<TenantMedicine?> LoadTenantMedicineAsync(int tenantId, int medicineId)
+        {
+            return await _context.TenantMedicines
+                .Include(tm => tm.Stock)
+                .Include(tm => tm.Batches.Where(b => b.IsActive))
+                .FirstOrDefaultAsync(tm =>
+                    tm.TenantId == tenantId &&
+                    tm.MedicineId == medicineId);
         }
 
         private async Task<TenantMedicine> EnsureTenantMedicineAsync(int tenantId, Medicine medicine, Tenant tenant, decimal price)
@@ -278,7 +301,7 @@ namespace Backend.Services
                 return existing;
             }
 
-            var isStockTracked = tenant.InventoryMode != PharmacyInventoryMode.CatalogOnly;
+            var isStockTracked = tenant.MaintainStock && tenant.InventoryMode != PharmacyInventoryMode.CatalogOnly;
             var tenantMedicine = new TenantMedicine
             {
                 TenantId = tenantId,
@@ -296,7 +319,7 @@ namespace Backend.Services
 
         private async Task<string?> ValidateStockAsync(Tenant tenant, TenantMedicine tenantMedicine, int quantity, int? batchId)
         {
-            if (tenant.InventoryMode == PharmacyInventoryMode.CatalogOnly)
+            if (!tenant.MaintainStock || tenant.InventoryMode == PharmacyInventoryMode.CatalogOnly)
             {
                 return null;
             }

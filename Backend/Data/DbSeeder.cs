@@ -18,9 +18,9 @@ namespace Backend.Data
         {
             var tenants = new[]
             {
-                new Tenant { ShopCode = "demo", Name = "Demo Pharmacy (Batch)", InventoryMode = PharmacyInventoryMode.BatchExpiry, PromptPriceWhenUnset = true },
-                new Tenant { ShopCode = "demo-catalog", Name = "Demo Catalog Only", InventoryMode = PharmacyInventoryMode.CatalogOnly, PromptPriceWhenUnset = true },
-                new Tenant { ShopCode = "demo-stock", Name = "Demo Stock Tracked", InventoryMode = PharmacyInventoryMode.StockTracked, PromptPriceWhenUnset = true }
+                new Tenant { ShopCode = "demo", Name = "Demo Pharmacy (Batch)", InventoryMode = PharmacyInventoryMode.BatchExpiry, PromptPriceWhenUnset = true, MaintainStock = true },
+                new Tenant { ShopCode = "demo-catalog", Name = "Demo Catalog Only", InventoryMode = PharmacyInventoryMode.CatalogOnly, PromptPriceWhenUnset = true, MaintainStock = false },
+                new Tenant { ShopCode = "demo-stock", Name = "Demo Stock Tracked", InventoryMode = PharmacyInventoryMode.StockTracked, PromptPriceWhenUnset = true, MaintainStock = true }
             };
 
             foreach (var tenant in tenants)
@@ -29,6 +29,11 @@ namespace Backend.Data
                 {
                     tenant.CreatedAtUtc = DateTime.UtcNow;
                     context.Tenants.Add(tenant);
+                }
+                else
+                {
+                    var existing = await context.Tenants.FirstAsync(t => t.ShopCode == tenant.ShopCode);
+                    existing.MaintainStock = tenant.MaintainStock;
                 }
             }
 

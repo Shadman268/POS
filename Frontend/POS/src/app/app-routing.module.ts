@@ -7,6 +7,10 @@ import { DashboardComponent } from './shared/components/dashboard/dashboard.comp
 import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
 import { AllProductsComponent } from './shared/components/all-products/all-products.component';
 import { CatalogComponent } from './shared/components/catalog/catalog.component';
+import { SettingsShellComponent } from './shared/components/settings/settings-shell/settings-shell.component';
+import { SettingsProductComponent } from './shared/components/settings/settings-product/settings-product.component';
+import { SettingsReceiptComponent } from './shared/components/settings/settings-receipt/settings-receipt.component';
+import { SettingsLineComponent } from './shared/components/settings/settings-line/settings-line.component';
 import { AuthGuard } from './core/guards/auth.guard';
 
 const routes: Routes = [
@@ -36,6 +40,17 @@ const routes: Routes = [
         path: 'products/catalog',
         component: CatalogComponent,
         data: { title: 'Catalog' }
+      },
+      {
+        path: 'settings',
+        component: SettingsShellComponent,
+        data: { title: 'Settings' },
+        children: [
+          { path: '', redirectTo: 'product', pathMatch: 'full' },
+          { path: 'product', component: SettingsProductComponent, data: { title: 'Product Settings' } },
+          { path: 'receipt', component: SettingsReceiptComponent, data: { title: 'Receipt Settings' } },
+          { path: 'line', component: SettingsLineComponent, data: { title: 'Line Settings' } }
+        ]
       },
       {
         path: '',

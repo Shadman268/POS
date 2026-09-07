@@ -10,12 +10,17 @@ import { ReceiptPdfService } from '../../services/receipt-pdf.service';
 })
 export class ReceiptPreviewComponent {
     currentDate = new Date();
+    headerLines: string[] = [];
+    footerLines: string[] = [];
 
     constructor(
         public dialogRef: MatDialogRef<ReceiptPreviewComponent>,
         @Inject(MAT_DIALOG_DATA) public receipt: ReceiptData,
         private receiptPdfService: ReceiptPdfService
-    ) { }
+    ) {
+        this.headerLines = this.splitLines(receipt.receiptHeader);
+        this.footerLines = this.splitLines(receipt.receiptFooter);
+    }
 
     downloadPdf(): void {
         const doc = this.receiptPdfService.generateReceiptPdf(this.receipt);
@@ -24,5 +29,12 @@ export class ReceiptPreviewComponent {
         doc.save(filename);
 
         this.dialogRef.close();
+    }
+
+    private splitLines(value?: string | null): string[] {
+        if (!value?.trim()) {
+            return [];
+        }
+        return value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
     }
 }

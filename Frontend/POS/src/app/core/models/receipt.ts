@@ -4,11 +4,13 @@ export interface ReceiptItemData {
     quantity: number;
     price: number;
     subtotal: number;
+    lineDiscount?: number;
 }
 
 export interface ReceiptData {
     id?: number;
     customerName: string;
+    shopName?: string | null;
     total: number;
     discountUnit: string;
     discountValue: number;
@@ -17,4 +19,7 @@ export interface ReceiptData {
     changeAmount: number;
     items: ReceiptItemData[];
     date?: Date;
+    receiptHeader?: string | null;
+    receiptFooter?: string | null;
+    showLineDiscount?: boolean;
 }

@@ -1,0 +1,22 @@
+<div class="settings-shell">
+  <div class="settings-header">
+    <h1>Settings</h1>
+    <p>Configure product, receipt, and line behavior for your pharmacy.</p>
+  </div>
+
+  <nav class="settings-tabs">
+    <a
+      *ngFor="let tab of tabs"
+      [routerLink]="tab.route"
+      routerLinkActive="active"
+      class="settings-tab"
+    >
+      <mat-icon>{{ tab.icon }}</mat-icon>
+      {{ tab.label }}
+    </a>
+  </nav>
+
+  <div class="settings-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

@@ -1,0 +1,53 @@
+<div class="settings-card" *ngIf="!loading; else loadingState">
+  <div class="feedback success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="feedback error" *ngIf="error">{{ error }}</div>
+
+  <h2>Receipt Settings</h2>
+  <p class="section-desc">Set your shop name and customize the header and footer on customer receipts.</p>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Shop name</mat-label>
+    <input
+      matInput
+      [(ngModel)]="shopName"
+      placeholder="e.g. City Pharmacy"
+      required
+    />
+    <mat-hint>Shown in the sidebar and as the main title on receipts.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Receipt header</mat-label>
+    <textarea
+      matInput
+      rows="4"
+      [(ngModel)]="receiptHeader"
+      placeholder="Address, phone, license number..."
+    ></textarea>
+    <mat-hint>Additional lines below the shop name on receipts.</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Receipt footer</mat-label>
+    <textarea
+      matInput
+      rows="3"
+      [(ngModel)]="receiptFooter"
+      placeholder="Thank you message, return policy..."
+    ></textarea>
+    <mat-hint>Shown at the bottom of printed and preview receipts.</mat-hint>
+  </mat-form-field>
+
+  <div class="actions">
+    <button mat-raised-button color="primary" (click)="save()" [disabled]="saving || !shopName.trim()">
+      {{ saving ? 'Saving...' : 'Save changes' }}
+    </button>
+  </div>
+</div>
+
+<ng-template #loadingState>
+  <div class="settings-card loading-state">
+    <mat-spinner diameter="32"></mat-spinner>
+    <span>Loading receipt settings...</span>
+  </div>
+</ng-template>

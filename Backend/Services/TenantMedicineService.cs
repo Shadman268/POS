@@ -79,7 +79,7 @@ namespace Backend.Services
                 .Include(tm => tm.Stock)
                 .FirstOrDefaultAsync(tm => tm.TenantId == tenantId && tm.MedicineId == medicineId);
 
-            var isStockTracked = dto.IsStockTracked && tenant.InventoryMode != PharmacyInventoryMode.CatalogOnly;
+            var isStockTracked = dto.IsStockTracked && tenant.MaintainStock && tenant.InventoryMode != PharmacyInventoryMode.CatalogOnly;
 
             if (tenantMedicine == null)
             {
@@ -126,7 +126,7 @@ namespace Backend.Services
                     stock.UpdatedAtUtc = DateTime.UtcNow;
                 }
 
-                if (tenant.InventoryMode == PharmacyInventoryMode.BatchExpiry)
+                if (tenant.MaintainStock && tenant.InventoryMode == PharmacyInventoryMode.BatchExpiry)
                 {
                     var batch = await _context.MedicineBatches
                         .Where(b => b.TenantMedicineId == tenantMedicine.Id && b.IsActive)

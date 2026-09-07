@@ -1,0 +1,29 @@
+.product-name {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.generic-name {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.actions-right {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

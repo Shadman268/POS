@@ -1,0 +1,28 @@
+<div class="settings-card" *ngIf="!loading; else loadingState">
+  <div class="feedback success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="feedback error" *ngIf="error">{{ error }}</div>
+
+  <h2>Product Settings</h2>
+  <p class="section-desc">Control whether your shop tracks and deducts stock when selling medicines.</p>
+
+  <div class="setting-row">
+    <div class="setting-text">
+      <strong>Maintain stock</strong>
+      <span>When enabled, stock quantities are tracked and reduced on sale. When disabled, medicines sell without stock checks.</span>
+    </div>
+    <mat-slide-toggle [(ngModel)]="maintainStock" color="primary"></mat-slide-toggle>
+  </div>
+
+  <div class="actions">
+    <button mat-raised-button color="primary" (click)="save()" [disabled]="saving">
+      {{ saving ? 'Saving...' : 'Save changes' }}
+    </button>
+  </div>
+</div>
+
+<ng-template #loadingState>
+  <div class="settings-card loading-state">
+    <mat-spinner diameter="32"></mat-spinner>
+    <span>Loading product settings...</span>
+  </div>
+</ng-template>

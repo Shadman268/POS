@@ -124,7 +124,7 @@ namespace Backend.Services
                 throw new InvalidOperationException($"Price is required for '{medicine.Name}'.");
             }
 
-            if (tenantMedicine != null && tenantMedicine.IsStockTracked && tenant.InventoryMode != PharmacyInventoryMode.CatalogOnly)
+            if (tenantMedicine != null && PosCatalogService.ShouldTrackStock(tenant, tenantMedicine))
             {
                 await ValidateStockBeforeSaleAsync(tenant, tenantMedicine, item.Quantity, item.MedicineBatchId);
             }
@@ -135,7 +135,7 @@ namespace Backend.Services
                 batch = await _context.MedicineBatches
                     .FirstOrDefaultAsync(b => b.Id == item.MedicineBatchId && b.TenantMedicineId == tenantMedicine!.Id);
             }
-            else if (tenant.InventoryMode == PharmacyInventoryMode.BatchExpiry && tenantMedicine?.IsStockTracked == true)
+            else if (tenant.MaintainStock && tenant.InventoryMode == PharmacyInventoryMode.BatchExpiry && tenantMedicine?.IsStockTracked == true)
             {
                 batch = await SelectFefoBatchAsync(tenantMedicine!.Id, item.Quantity);
             }
@@ -152,7 +152,10 @@ namespace Backend.Services
                 ExpiryDate = batch?.ExpiryDate,
                 Quantity = item.Quantity,
                 Price = salePrice,
-                Subtotal = item.Subtotal > 0 ? item.Subtotal : salePrice * item.Quantity
+                LineDiscount = Math.Max(0, item.LineDiscount),
+                Subtotal = item.Subtotal > 0
+                    ? item.Subtotal
+                    : Math.Max(0, salePrice * item.Quantity - Math.Max(0, item.LineDiscount))
             };
         }
 
@@ -174,7 +177,7 @@ namespace Backend.Services
                 TenantId = tenant.Id,
                 MedicineId = medicine.Id,
                 SellingPrice = price,
-                IsStockTracked = tenant.InventoryMode != PharmacyInventoryMode.CatalogOnly,
+                IsStockTracked = tenant.MaintainStock && tenant.InventoryMode != PharmacyInventoryMode.CatalogOnly,
                 CreatedAtUtc = DateTime.UtcNow,
                 UpdatedAtUtc = DateTime.UtcNow
             };
@@ -186,6 +189,11 @@ namespace Backend.Services
 
         private async Task ValidateStockBeforeSaleAsync(Tenant tenant, TenantMedicine tenantMedicine, int quantity, int? batchId)
         {
+            if (!tenant.MaintainStock || tenant.InventoryMode == PharmacyInventoryMode.CatalogOnly)
+            {
+                return;
+            }
+
             if (tenant.InventoryMode == PharmacyInventoryMode.BatchExpiry)
             {
                 if (batchId.HasValue)
@@ -226,7 +234,7 @@ namespace Backend.Services
 
         private async Task DeductStockAsync(Tenant tenant, ReceiptItem item, int receiptId)
         {
-            if (item.TenantMedicineId == null || tenant.InventoryMode == PharmacyInventoryMode.CatalogOnly)
+            if (item.TenantMedicineId == null || !tenant.MaintainStock || tenant.InventoryMode == PharmacyInventoryMode.CatalogOnly)
             {
                 return;
             }

@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ProductView } from 'src/app/core/models/product-data';
 import { ProductService } from '../../services/product.service';
+import { TenantSettingsService } from '../../services/tenant-settings.service';
 import { ApiConfigService } from '../../../core/services/api-config.service';
 
 @Component({
@@ -16,14 +17,20 @@ export class ProductViewComponent implements OnInit {
   brands: string[] = ['All Brand'];
   selectedCategory = 'All Category';
   selectedBrand = 'All Brand';
+  maintainStock = true;
 
   constructor(
     private http: HttpClient,
     private productService: ProductService,
+    private tenantSettingsService: TenantSettingsService,
     private api: ApiConfigService
   ) {}
 
   ngOnInit(): void {
+    this.tenantSettingsService.settings$.subscribe(settings => {
+      this.maintainStock = settings?.maintainStock ?? true;
+    });
+
     this.http.get<ProductView[]>(this.api.url('Product')).subscribe(data => {
       this.products = data;
       this.productService.setProducts(data);
@@ -62,6 +69,6 @@ export class ProductViewComponent implements OnInit {
   }
 
   selectProduct(product: ProductView): void {
-    this.productService.addProductInReceipt(product);
+    this.productService.addProductToCart(product);
   }
 }

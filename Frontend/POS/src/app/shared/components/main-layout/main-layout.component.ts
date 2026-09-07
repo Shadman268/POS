@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { TenantSettingsService } from '../../services/tenant-settings.service';
 import { User } from '../../../core/models/user';
 import { filter, Subscription } from 'rxjs';
 
@@ -30,6 +31,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   selectedLanguage = 'English';
   languages = ['English', 'Bengali'];
   expandedMenus = new Set<string>();
+  shopName = 'MedPoint';
 
   private routerSub?: Subscription;
   private clockInterval?: ReturnType<typeof setInterval>;
@@ -51,11 +53,20 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     { label: 'Sales', icon: 'payments', disabled: true },
     { label: 'Reports', icon: 'bar_chart', disabled: true },
     { label: 'User Management', icon: 'manage_accounts', disabled: true },
-    { label: 'Settings', icon: 'settings', disabled: true }
+    {
+      label: 'Settings',
+      icon: 'settings',
+      children: [
+        { label: 'Product Settings', route: '/settings/product' },
+        { label: 'Receipt Settings', route: '/settings/receipt' },
+        { label: 'Line Settings', route: '/settings/line' }
+      ]
+    }
   ];
 
   constructor(
     private authService: AuthService,
+    private tenantSettingsService: TenantSettingsService,
     private router: Router
   ) {}
 
@@ -66,6 +77,13 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
 
     this.authService.currentUser.subscribe(user => {
       this.currentUser = user;
+      if (user) {
+        this.tenantSettingsService.loadSettings().subscribe();
+      }
+    });
+
+    this.tenantSettingsService.settings$.subscribe(settings => {
+      this.shopName = settings?.name?.trim() || this.currentUser?.tenantName || 'MedPoint';
     });
 
     this.updateClock();
@@ -147,6 +165,9 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   private syncExpandedMenus(url: string): void {
     if (url.startsWith('/products')) {
       this.expandedMenus.add('Products');
+    }
+    if (url.startsWith('/settings')) {
+      this.expandedMenus.add('Settings');
     }
   }
 

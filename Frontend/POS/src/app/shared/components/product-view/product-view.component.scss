@@ -137,6 +137,11 @@
   color: #0f172a;
   margin-top: 12px;
   letter-spacing: -0.3px;
+
+  &.set-price {
+    font-size: 14px;
+    color: #2563eb;
+  }
 }
 
 .empty-grid {

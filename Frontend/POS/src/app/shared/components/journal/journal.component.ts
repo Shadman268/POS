@@ -10,10 +10,11 @@ import {
   tap
 } from 'rxjs/operators';
 import { ProductService } from '../../services/product.service';
+import { TenantSettingsService } from '../../services/tenant-settings.service';
 import { ReceiptService } from '../../services/receipt.service';
 import { ReceiptPdfService } from '../../services/receipt-pdf.service';
 import { ReceiptData, ReceiptItemData } from '../../../core/models/receipt';
-import { ProductView } from '../../../core/models/product-data';
+import { LineDiscountUnit, ProductView } from '../../../core/models/product-data';
 
 @Component({
   selector: 'app-journal',
@@ -29,19 +30,28 @@ export class JournalComponent implements OnInit, OnDestroy {
   activeIndex = -1;
   searchLoading = false;
   discountAmount = 0;
-  vatRate = 0.05;
+  showLineDiscount = false;
+  showVat = false;
+  vatPercent = 5;
 
   private readonly destroy$ = new Subject<void>();
   private latestSearchQuery = '';
 
   constructor(
     protected productService: ProductService,
+    private tenantSettingsService: TenantSettingsService,
     private receiptService: ReceiptService,
     private receiptPdfService: ReceiptPdfService,
     private host: ElementRef<HTMLElement>
   ) {}
 
   ngOnInit(): void {
+    this.tenantSettingsService.settings$.pipe(takeUntil(this.destroy$)).subscribe(settings => {
+      this.showLineDiscount = settings?.showLineDiscount ?? false;
+      this.showVat = settings?.showVat ?? false;
+      this.vatPercent = settings?.vatPercent ?? 5;
+    });
+
     this.searchControl.valueChanges.pipe(
       debounceTime(250),
       distinctUntilChanged(),
@@ -130,7 +140,6 @@ export class JournalComponent implements OnInit, OnDestroy {
 
   selectAutocomplete(product: ProductView): void {
     this.addProductToCart(product);
-    this.clearSearch();
   }
 
   private clearSearch(): void {
@@ -142,7 +151,7 @@ export class JournalComponent implements OnInit, OnDestroy {
   }
 
   addProductToCart(product: ProductView): void {
-    this.productService.addProductInReceipt(product);
+    this.productService.addProductToCart(product, () => this.clearSearch());
   }
 
   addFromSearchButton(): void {
@@ -156,7 +165,6 @@ export class JournalComponent implements OnInit, OnDestroy {
       const best = this.findBestMatch(query, this.filteredProducts);
       if (best) {
         this.addProductToCart(best);
-        this.clearSearch();
         return;
       }
     }
@@ -174,7 +182,6 @@ export class JournalComponent implements OnInit, OnDestroy {
         const best = this.findBestMatch(query, results);
         if (best) {
           this.addProductToCart(best);
-          this.clearSearch();
         } else {
           this.addProductRequest.emit();
         }
@@ -233,9 +240,40 @@ export class JournalComponent implements OnInit, OnDestroy {
 
   getSubtotal(): number {
     return this.productService.receiptItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+      (sum, item) => sum + this.getLineGrossTotal(item),
       0
     );
+  }
+
+  getLineGrossTotal(item: {
+    price: number;
+    quantity: number;
+    lineDiscount?: number;
+    lineDiscountUnit?: LineDiscountUnit;
+  }): number {
+    const gross = item.price * item.quantity;
+    if (!this.showLineDiscount) {
+      return gross;
+    }
+
+    return Math.max(0, gross - this.getLineDiscountAmount(item));
+  }
+
+  getLineDiscountAmount(item: {
+    price: number;
+    quantity: number;
+    lineDiscount?: number;
+    lineDiscountUnit?: LineDiscountUnit;
+  }): number {
+    const gross = item.price * item.quantity;
+    const value = Math.max(0, item.lineDiscount ?? 0);
+
+    if ((item.lineDiscountUnit ?? 'BDT') === '%') {
+      const pct = Math.min(100, value);
+      return Math.min(gross, gross * (pct / 100));
+    }
+
+    return Math.min(gross, value);
   }
 
   getDiscountValue(): number {
@@ -243,8 +281,12 @@ export class JournalComponent implements OnInit, OnDestroy {
   }
 
   getVatAmount(): number {
+    if (!this.showVat) {
+      return 0;
+    }
+
     const taxable = this.getSubtotal() - this.getDiscountValue();
-    return Math.round(taxable * this.vatRate);
+    return Math.round(taxable * (this.vatPercent / 100));
   }
 
   getTotal(): number {
@@ -253,7 +295,23 @@ export class JournalComponent implements OnInit, OnDestroy {
 
   getLineTotal(index: number): number {
     const item = this.productService.receiptItems[index];
-    return item.price * item.quantity;
+    return this.getLineGrossTotal(item);
+  }
+
+  onLineDiscountInput(index: number, value: string): void {
+    const discount = parseFloat(value);
+    const item = this.productService.receiptItems[index];
+    let next = isNaN(discount) ? 0 : Math.max(0, discount);
+
+    if ((item.lineDiscountUnit ?? 'BDT') === '%') {
+      next = Math.min(100, next);
+    }
+
+    this.productService.updateLineDiscount(index, next);
+  }
+
+  onLineDiscountUnitChange(index: number, unit: LineDiscountUnit): void {
+    this.productService.updateLineDiscountUnit(index, unit);
   }
 
   decreaseQuantity(index: number): void {
@@ -310,18 +368,25 @@ export class JournalComponent implements OnInit, OnDestroy {
       productName: item.productName,
       quantity: item.quantity,
       price: item.price,
-      subtotal: item.price * item.quantity
+      lineDiscount: this.showLineDiscount ? this.getLineDiscountAmount(item) : 0,
+      subtotal: this.getLineGrossTotal(item)
     }));
+
+    const settings = this.tenantSettingsService.settings;
 
     const receiptData: ReceiptData = {
       customerName: this.customerName,
+      shopName: settings?.name,
       total: subtotal,
       discountValue: discount,
       discountUnit: 'BDT',
       priceAfterDiscount: total,
       cashReceived: total,
       changeAmount: 0,
-      items: receiptItems
+      items: receiptItems,
+      receiptHeader: settings?.receiptHeader,
+      receiptFooter: settings?.receiptFooter,
+      showLineDiscount: this.showLineDiscount
     };
 
     this.receiptService.createReceipt(receiptData).subscribe({

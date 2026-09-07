@@ -16,6 +16,7 @@
     >
       <span
         class="stock-badge"
+        *ngIf="maintainStock"
         [class.good]="stockLevel(product.stockQuantity ?? 0) === 'good'"
         [class.low]="stockLevel(product.stockQuantity ?? 0) === 'low'"
         [class.out]="stockLevel(product.stockQuantity ?? 0) === 'out'"
@@ -28,7 +29,9 @@
         <span class="generic" *ngIf="product.genericName">{{ product.genericName }}</span>
       </div>
 
-      <span class="price">৳{{ product.price }}</span>
+      <span class="price" [class.set-price]="product.requiresPrice || +product.price <= 0">
+        {{ (product.requiresPrice || +product.price <= 0) ? 'Set price' : ('৳' + product.price) }}
+      </span>
     </div>
 
     <div class="empty-grid" *ngIf="filteredProducts.length === 0">

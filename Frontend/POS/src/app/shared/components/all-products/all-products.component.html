@@ -43,14 +43,14 @@
             <th *ngFor="let col of readonlyColumns">{{ col.label }}</th>
             <th>Cost Price</th>
             <th>Selling Price</th>
-            <th>Stock</th>
-            <th>Track Stock</th>
+            <th *ngIf="maintainStock">Stock</th>
+            <th *ngIf="maintainStock">Track Stock</th>
             <th class="actions-col">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="loading">
-            <td [attr.colspan]="readonlyColumns.length + 5" class="state-cell">
+            <td [attr.colspan]="readonlyColumns.length + (maintainStock ? 5 : 3)" class="state-cell">
               <mat-spinner diameter="28"></mat-spinner>
               <span>Loading products...</span>
             </td>
@@ -75,7 +75,7 @@
                 placeholder="Price"
               />
             </td>
-            <td class="editable-cell">
+            <td class="editable-cell" *ngIf="maintainStock">
               <input
                 type="number"
                 min="0"
@@ -85,7 +85,7 @@
                 placeholder="0"
               />
             </td>
-            <td class="editable-cell center">
+            <td class="editable-cell center" *ngIf="maintainStock">
               <mat-checkbox [(ngModel)]="product.isStockTracked"></mat-checkbox>
             </td>
             <td class="actions-col">

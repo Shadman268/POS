@@ -7,13 +7,14 @@
         class="sidebar-brand"
         [class.clickable]="sidebarCollapsed"
         (click)="sidebarCollapsed && toggleCollapse()"
+        [matTooltip]="sidebarCollapsed ? shopName : ''"
       >
         <div class="brand-icon-wrap">
           <mat-icon>medication</mat-icon>
         </div>
         <div class="brand-text" *ngIf="!sidebarCollapsed">
           <span class="brand-prefix">Rx</span>
-          <span class="brand-name">MedPoint</span>
+          <span class="brand-name">{{ shopName }}</span>
         </div>
       </div>
       <button

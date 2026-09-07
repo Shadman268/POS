@@ -10,6 +10,7 @@ namespace Backend.DTOs
         public int Quantity { get; set; }
         public decimal Price { get; set; }
         public decimal Subtotal { get; set; }
+        public decimal LineDiscount { get; set; }
         public int? MedicineBatchId { get; set; }
     }
 }

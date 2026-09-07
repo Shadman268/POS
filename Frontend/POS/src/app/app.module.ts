@@ -21,9 +21,11 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AddProductDialogComponent } from './shared/dialogs/add-product-dialog/add-product-dialog.component';
 import { AddTenantProductDialogComponent } from './shared/dialogs/add-tenant-product-dialog/add-tenant-product-dialog.component';
+import { SetPriceDialogComponent } from './shared/dialogs/set-price-dialog/set-price-dialog.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { LoginComponent } from './shared/components/login/login.component';
@@ -32,6 +34,10 @@ import { MainLayoutComponent } from './shared/components/main-layout/main-layout
 import { DashboardComponent } from './shared/components/dashboard/dashboard.component';
 import { AllProductsComponent } from './shared/components/all-products/all-products.component';
 import { CatalogComponent } from './shared/components/catalog/catalog.component';
+import { SettingsShellComponent } from './shared/components/settings/settings-shell/settings-shell.component';
+import { SettingsProductComponent } from './shared/components/settings/settings-product/settings-product.component';
+import { SettingsReceiptComponent } from './shared/components/settings/settings-receipt/settings-receipt.component';
+import { SettingsLineComponent } from './shared/components/settings/settings-line/settings-line.component';
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
 
 @NgModule({
@@ -43,12 +49,17 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     ProductViewComponent,
     AddProductDialogComponent,
     AddTenantProductDialogComponent,
+    SetPriceDialogComponent,
     LoginComponent,
     RegisterComponent,
     MainLayoutComponent,
     DashboardComponent,
     AllProductsComponent,
-    CatalogComponent
+    CatalogComponent,
+    SettingsShellComponent,
+    SettingsProductComponent,
+    SettingsReceiptComponent,
+    SettingsLineComponent
   ],
   imports: [
     BrowserModule,
@@ -71,7 +82,8 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     MatListModule,
     MatGridListModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatSlideToggleModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }

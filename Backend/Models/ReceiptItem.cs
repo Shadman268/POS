@@ -41,6 +41,9 @@ namespace Backend.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal Subtotal { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal LineDiscount { get; set; }
+
         public Receipt Receipt { get; set; } = null!;
         public Medicine? Medicine { get; set; }
         public TenantMedicine? TenantMedicine { get; set; }

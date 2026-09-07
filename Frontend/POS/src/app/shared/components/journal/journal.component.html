@@ -33,7 +33,9 @@
             {{ product.productName }}
             <small *ngIf="product.genericName">{{ product.genericName }}</small>
           </span>
-          <span class="auto-price">৳{{ product.price }}</span>
+          <span class="auto-price" [class.set-price]="product.requiresPrice || +product.price <= 0">
+            {{ (product.requiresPrice || +product.price <= 0) ? 'Set price' : ('৳' + product.price) }}
+          </span>
         </button>
       </div>
     </div>
@@ -51,6 +53,31 @@
       <div class="line-details">
         <span class="line-name">{{ item.productName }}</span>
         <span class="line-unit-price">৳{{ item.price }} / {{ item.unit }}</span>
+      </div>
+      <div class="line-discount" *ngIf="showLineDiscount">
+        <label>Disc</label>
+        <input
+          type="number"
+          min="0"
+          [max]="item.lineDiscountUnit === '%' ? 100 : null"
+          step="0.01"
+          [value]="item.lineDiscount || 0"
+          (input)="onLineDiscountInput(i, $any($event.target).value)"
+        />
+        <div class="disc-unit-toggle">
+          <button
+            type="button"
+            class="unit-btn"
+            [class.active]="(item.lineDiscountUnit || 'BDT') === 'BDT'"
+            (click)="onLineDiscountUnitChange(i, 'BDT')"
+          >BDT</button>
+          <button
+            type="button"
+            class="unit-btn"
+            [class.active]="item.lineDiscountUnit === '%'"
+            (click)="onLineDiscountUnitChange(i, '%')"
+          >%</button>
+        </div>
       </div>
       <div class="qty-controls">
         <button type="button" class="qty-btn" (click)="decreaseQuantity(i)">−</button>
@@ -95,8 +122,8 @@
         />
       </div>
     </div>
-    <div class="summary-row">
-      <span>VAT (5%)</span>
+    <div class="summary-row" *ngIf="showVat">
+      <span>VAT ({{ vatPercent }}%)</span>
       <span>৳{{ getVatAmount() }}</span>
     </div>
     <div class="summary-row total-row">

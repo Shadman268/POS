@@ -1,0 +1,54 @@
+<div class="settings-card" *ngIf="!loading; else loadingState">
+  <div class="feedback success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="feedback error" *ngIf="error">{{ error }}</div>
+
+  <h2>Line Settings</h2>
+  <p class="section-desc">Control how individual sale lines appear in the POS journal and on receipts.</p>
+
+  <div class="setting-row">
+    <div class="setting-text">
+      <strong>Show line-level discount</strong>
+      <span>When enabled, cashiers can enter a discount amount on each line item in the POS journal.</span>
+    </div>
+    <mat-slide-toggle [(ngModel)]="showLineDiscount" color="primary"></mat-slide-toggle>
+  </div>
+
+  <div class="setting-row">
+    <div class="setting-text">
+      <strong>Show VAT</strong>
+      <span>When enabled, VAT is calculated and shown in the POS journal summary using the rate below.</span>
+    </div>
+    <mat-slide-toggle [(ngModel)]="showVat" color="primary"></mat-slide-toggle>
+  </div>
+
+  <div class="setting-row" *ngIf="showVat">
+    <div class="setting-text">
+      <strong>VAT rate</strong>
+      <span>Percentage applied to the taxable amount after discounts.</span>
+    </div>
+    <div class="vat-input-wrap">
+      <input
+        type="number"
+        class="vat-input"
+        [(ngModel)]="vatPercent"
+        min="0"
+        max="100"
+        step="1"
+      />
+      <span class="vat-suffix">%</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button mat-raised-button color="primary" (click)="save()" [disabled]="saving">
+      {{ saving ? 'Saving...' : 'Save changes' }}
+    </button>
+  </div>
+</div>
+
+<ng-template #loadingState>
+  <div class="settings-card loading-state">
+    <mat-spinner diameter="32"></mat-spinner>
+    <span>Loading line settings...</span>
+  </div>
+</ng-template>

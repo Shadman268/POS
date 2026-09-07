@@ -8,6 +8,7 @@ import {
 } from '../../../core/models/tenant-product';
 import { AddTenantProductDialogComponent } from '../../dialogs/add-tenant-product-dialog/add-tenant-product-dialog.component';
 import { TenantMedicineService } from '../../services/tenant-medicine.service';
+import { TenantSettingsService } from '../../services/tenant-settings.service';
 
 interface ProductEditableSnapshot {
   costPrice: number | null;
@@ -34,16 +35,21 @@ export class AllProductsComponent implements OnInit {
   resettingMedicineId: number | null = null;
   error = '';
   successMessage = '';
+  maintainStock = true;
   private savedSnapshots = new Map<number, ProductEditableSnapshot>();
 
   readonly pageSizeOptions = [25, 50, 100, 200];
 
   constructor(
     private tenantMedicineService: TenantMedicineService,
+    private tenantSettingsService: TenantSettingsService,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
+    this.tenantSettingsService.settings$.subscribe(settings => {
+      this.maintainStock = settings?.maintainStock ?? true;
+    });
     this.loadProducts();
   }
 
@@ -138,8 +144,8 @@ export class AllProductsComponent implements OnInit {
     const settings: UpdateTenantProductSettings = {
       sellingPrice: product.sellingPrice ?? null,
       costPrice: product.costPrice ?? null,
-      isStockTracked: product.isStockTracked,
-      stockQuantity: product.stockQuantity ?? 0
+      isStockTracked: this.maintainStock ? product.isStockTracked : false,
+      stockQuantity: this.maintainStock && product.isStockTracked ? (product.stockQuantity ?? 0) : 0
     };
 
     this.savingMedicineId = product.medicineId;

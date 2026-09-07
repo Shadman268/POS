@@ -23,6 +23,32 @@ namespace Backend.Models
         /// </summary>
         public bool PromptPriceWhenUnset { get; set; } = true;
 
+        /// <summary>
+        /// When false, stock is not tracked or deducted for sales (catalog-style).
+        /// </summary>
+        public bool MaintainStock { get; set; } = true;
+
+        [StringLength(500)]
+        public string? ReceiptHeader { get; set; }
+
+        [StringLength(500)]
+        public string? ReceiptFooter { get; set; }
+
+        /// <summary>
+        /// When true, cashiers can apply a discount on individual receipt lines.
+        /// </summary>
+        public bool ShowLineDiscount { get; set; }
+
+        /// <summary>
+        /// When true, VAT is shown and applied in the POS journal summary.
+        /// </summary>
+        public bool ShowVat { get; set; }
+
+        /// <summary>
+        /// VAT percentage applied when ShowVat is enabled (e.g. 5 for 5%).
+        /// </summary>
+        public decimal VatPercent { get; set; } = 5;
+
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
