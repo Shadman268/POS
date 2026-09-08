@@ -90,7 +90,14 @@
       <div class="header-spacer"></div>
 
       <div class="header-utilities">
-        <button mat-icon-button class="utility-btn" aria-label="Calculator">
+        <button
+          mat-icon-button
+          class="utility-btn"
+          aria-label="Calculator"
+          matTooltip="Calculator"
+          [class.active]="calculatorOpen"
+          (click)="toggleCalculator()"
+        >
           <mat-icon>calculate</mat-icon>
         </button>
 
@@ -134,4 +141,6 @@
       <router-outlet></router-outlet>
     </main>
   </div>
+
+  <app-calculator [open]="calculatorOpen" (closed)="closeCalculator()"></app-calculator>
 </div>

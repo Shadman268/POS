@@ -1,0 +1,77 @@
+<div
+  #calcWindow
+  class="calc-window"
+  [class.visible]="open"
+  [attr.aria-hidden]="!open"
+  tabindex="-1"
+  cdkDrag
+  cdkDragBoundary="body"
+>
+  <div class="calc-header" cdkDragHandle>
+    <div class="calc-title">
+      <mat-icon>calculate</mat-icon>
+      <span>Calculator</span>
+      <small *ngIf="hasMemory" class="memory-badge">M</small>
+    </div>
+    <div class="calc-header-actions">
+      <button
+        type="button"
+        mat-icon-button
+        class="header-action"
+        [matTooltip]="copied ? 'Copied' : 'Copy result'"
+        (click)="copyResult(); $event.stopPropagation()"
+        [disabled]="error"
+      >
+        <mat-icon>{{ copied ? 'check' : 'content_copy' }}</mat-icon>
+      </button>
+      <button
+        type="button"
+        mat-icon-button
+        class="header-action"
+        aria-label="Close calculator"
+        (click)="close(); $event.stopPropagation()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="calc-display" aria-live="polite">
+    <div class="expression">{{ expression || '\u00a0' }}</div>
+    <div class="value" [class.error]="error">{{ display }}</div>
+  </div>
+
+  <div class="calc-keys" role="group" aria-label="Calculator keys">
+    <button type="button" class="key mem" (click)="memoryClear()">MC</button>
+    <button type="button" class="key mem" (click)="memoryRecall()">MR</button>
+    <button type="button" class="key mem" (click)="memoryAdd()">M+</button>
+    <button type="button" class="key mem" (click)="memorySubtract()">M-</button>
+
+    <button type="button" class="key util" (click)="clearAll()">C</button>
+    <button type="button" class="key util" (click)="toggleSign()">±</button>
+    <button type="button" class="key util" (click)="percent()">%</button>
+    <button type="button" class="key op" (click)="setOperator('/')">÷</button>
+
+    <button type="button" class="key digit" (click)="inputDigit('7')">7</button>
+    <button type="button" class="key digit" (click)="inputDigit('8')">8</button>
+    <button type="button" class="key digit" (click)="inputDigit('9')">9</button>
+    <button type="button" class="key op" (click)="setOperator('*')">×</button>
+
+    <button type="button" class="key digit" (click)="inputDigit('4')">4</button>
+    <button type="button" class="key digit" (click)="inputDigit('5')">5</button>
+    <button type="button" class="key digit" (click)="inputDigit('6')">6</button>
+    <button type="button" class="key op" (click)="setOperator('-')">−</button>
+
+    <button type="button" class="key digit" (click)="inputDigit('1')">1</button>
+    <button type="button" class="key digit" (click)="inputDigit('2')">2</button>
+    <button type="button" class="key digit" (click)="inputDigit('3')">3</button>
+    <button type="button" class="key op" (click)="setOperator('+')">+</button>
+
+    <button type="button" class="key digit" (click)="inputDigit('0')">0</button>
+    <button type="button" class="key digit" (click)="inputDecimal()">.</button>
+    <button type="button" class="key util" (click)="backspace()" aria-label="Backspace">
+      <mat-icon>backspace</mat-icon>
+    </button>
+    <button type="button" class="key equals" (click)="equals()">=</button>
+  </div>
+</div>

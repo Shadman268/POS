@@ -30,6 +30,7 @@ export class JournalComponent implements OnInit, OnDestroy {
   activeIndex = -1;
   searchLoading = false;
   discountAmount = 0;
+  discountUnit: LineDiscountUnit = 'BDT';
   showLineDiscount = false;
   showVat = false;
   vatPercent = 5;
@@ -277,7 +278,19 @@ export class JournalComponent implements OnInit, OnDestroy {
   }
 
   getDiscountValue(): number {
-    return Math.min(this.discountAmount, this.getSubtotal());
+    const subtotal = this.getSubtotal();
+    const value = Math.max(0, this.discountAmount);
+
+    if (this.discountUnit === '%') {
+      const pct = Math.min(100, value);
+      return Math.min(subtotal, subtotal * (pct / 100));
+    }
+
+    return Math.min(value, subtotal);
+  }
+
+  needsPrice(product: ProductView): boolean {
+    return !product.hasTenantPrice && (product.requiresPrice === true || +product.price <= 0);
   }
 
   getVatAmount(): number {
@@ -337,19 +350,6 @@ export class JournalComponent implements OnInit, OnDestroy {
     this.productService.removeFromReceipt(index);
   }
 
-  lineIcon(index: number): string {
-    const category = (this.productService.receiptItems[index].category || '').toLowerCase();
-    if (category.includes('equipment')) {
-      return 'medical_services';
-    }
-    return 'medication';
-  }
-
-  lineAccent(index: number): string {
-    const colors = ['#dbeafe', '#dcfce7', '#fef9c3', '#fee2e2', '#ede9fe'];
-    return colors[index % colors.length];
-  }
-
   holdOrder(): void {
     // Placeholder for hold functionality
   }
@@ -391,17 +391,30 @@ export class JournalComponent implements OnInit, OnDestroy {
 
     this.receiptService.createReceipt(receiptData).subscribe({
       next: (response) => {
-        this.receiptPdfService.showReceiptPreview(response || receiptData).subscribe(() => {
-          this.clearReceipt();
+        this.productService.refreshCatalog().subscribe({
+          next: () => {
+            this.receiptPdfService.showReceiptPreview(response || receiptData).subscribe(() => {
+              this.clearReceipt();
+            });
+          },
+          error: () => {
+            this.receiptPdfService.showReceiptPreview(response || receiptData).subscribe(() => {
+              this.clearReceipt();
+            });
+          }
         });
       },
-      error: (error) => console.error('Error creating receipt:', error)
+      error: (error) => {
+        const message = error.error?.message || 'Could not complete sale.';
+        window.alert(message);
+      }
     });
   }
 
   clearReceipt(): void {
     this.productService.clearReceipt();
     this.discountAmount = 0;
+    this.discountUnit = 'BDT';
     this.customerName = 'Walk-in Customer';
   }
 }

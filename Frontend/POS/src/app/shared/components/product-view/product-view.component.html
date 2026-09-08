@@ -1,8 +1,5 @@
 <div class="product-panel">
   <div class="filters">
-    <select class="filter-select" [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
-      <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-    </select>
     <select class="filter-select" [(ngModel)]="selectedBrand" (change)="onBrandChange()">
       <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
     </select>
@@ -29,8 +26,8 @@
         <span class="generic" *ngIf="product.genericName">{{ product.genericName }}</span>
       </div>
 
-      <span class="price" [class.set-price]="product.requiresPrice || +product.price <= 0">
-        {{ (product.requiresPrice || +product.price <= 0) ? 'Set price' : ('৳' + product.price) }}
+      <span class="price" [class.set-price]="needsPrice(product)">
+        {{ needsPrice(product) ? 'Set price' : ('৳' + product.price) }}
       </span>
     </div>
 

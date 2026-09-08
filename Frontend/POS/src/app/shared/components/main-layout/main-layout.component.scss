@@ -236,6 +236,11 @@
 
 .utility-btn {
   color: #64748b !important;
+
+  &.active {
+    color: #2563eb !important;
+    background: rgba(37, 99, 235, 0.1);
+  }
 }
 
 .language-select {

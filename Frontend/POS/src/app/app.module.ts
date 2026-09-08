@@ -26,8 +26,10 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AddProductDialogComponent } from './shared/dialogs/add-product-dialog/add-product-dialog.component';
 import { AddTenantProductDialogComponent } from './shared/dialogs/add-tenant-product-dialog/add-tenant-product-dialog.component';
 import { SetPriceDialogComponent } from './shared/dialogs/set-price-dialog/set-price-dialog.component';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatGridListModule } from '@angular/material/grid-list';
+import { CalculatorComponent } from './shared/components/calculator/calculator.component';
 import { LoginComponent } from './shared/components/login/login.component';
 import { RegisterComponent } from './shared/components/register/register.component';
 import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
@@ -53,6 +55,7 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     LoginComponent,
     RegisterComponent,
     MainLayoutComponent,
+    CalculatorComponent,
     DashboardComponent,
     AllProductsComponent,
     CatalogComponent,
@@ -67,6 +70,7 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     AppRoutingModule,
     ReactiveFormsModule,
     MatButtonModule,
+    DragDropModule,
     MatDialogModule,
     MatCardModule,
     MatCheckboxModule,

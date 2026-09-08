@@ -26,6 +26,7 @@ builder.Services.AddScoped<IPosCatalogService, PosCatalogService>();
 builder.Services.AddScoped<IMedicineCatalogService, MedicineCatalogService>();
 builder.Services.AddScoped<ITenantSettingsService, TenantSettingsService>();
 builder.Services.AddScoped<ITenantMedicineService, TenantMedicineService>();
+builder.Services.AddScoped<IStockInventoryService, StockInventoryService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
 builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();

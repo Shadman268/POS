@@ -7,6 +7,7 @@ using Backend.Models.Enums;
 using Backend.Repositories.Interfaces;
 using Backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace Backend.Services
 {
@@ -16,56 +17,68 @@ namespace Backend.Services
         private readonly IMapper _mapper;
         private readonly AppDbContext _context;
         private readonly ITenantContext _tenantContext;
+        private readonly IStockInventoryService _stockInventoryService;
 
         public ReceiptService(
             IReceiptRepository receiptRepository,
             IMapper mapper,
             AppDbContext context,
-            ITenantContext tenantContext)
+            ITenantContext tenantContext,
+            IStockInventoryService stockInventoryService)
         {
             _receiptRepository = receiptRepository;
             _mapper = mapper;
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _tenantContext = tenantContext;
+            _stockInventoryService = stockInventoryService;
         }
 
         public async Task<Receipt> CreateReceiptAsync(ReceiptDto receiptDto)
         {
             var tenantId = _tenantContext.TenantId;
-            var tenant = await _context.Tenants.FirstAsync(t => t.Id == tenantId);
+            await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
-            var receiptItems = new List<ReceiptItem>();
-
-            foreach (var item in receiptDto.Items)
+            try
             {
-                var line = await BuildReceiptLineAsync(tenant, item);
-                receiptItems.Add(line);
+                var tenant = await _context.Tenants.FirstAsync(t => t.Id == tenantId);
+                var receiptItems = new List<ReceiptItem>();
+
+                foreach (var item in receiptDto.Items)
+                {
+                    receiptItems.Add(await BuildReceiptLineAsync(tenant, item));
+                }
+
+                var receipt = new Receipt
+                {
+                    TenantId = tenantId,
+                    CustomerName = receiptDto.CustomerName,
+                    Total = receiptDto.Total,
+                    DiscountUnit = receiptDto.DiscountUnit,
+                    DiscountValue = receiptDto.DiscountValue,
+                    PriceAfterDiscount = receiptDto.PriceAfterDiscount,
+                    CashReceived = receiptDto.CashReceived,
+                    ChangeAmount = receiptDto.ChangeAmount,
+                    CreatedAt = DateTime.Now,
+                    Items = receiptItems
+                };
+
+                await _context.Receipts.AddAsync(receipt);
+                await _context.SaveChangesAsync();
+
+                foreach (var item in receiptItems)
+                {
+                    await _stockInventoryService.DeductForSaleAsync(tenant, item, receipt.Id);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return receipt;
             }
-
-            var receipt = new Receipt
+            catch
             {
-                TenantId = tenantId,
-                CustomerName = receiptDto.CustomerName,
-                Total = receiptDto.Total,
-                DiscountUnit = receiptDto.DiscountUnit,
-                DiscountValue = receiptDto.DiscountValue,
-                PriceAfterDiscount = receiptDto.PriceAfterDiscount,
-                CashReceived = receiptDto.CashReceived,
-                ChangeAmount = receiptDto.ChangeAmount,
-                CreatedAt = DateTime.Now,
-                Items = receiptItems
-            };
-
-            await _context.Receipts.AddAsync(receipt);
-            await _context.SaveChangesAsync();
-
-            foreach (var item in receiptItems)
-            {
-                await DeductStockAsync(tenant, item, receipt.Id);
+                await transaction.RollbackAsync();
+                throw;
             }
-
-            await _context.SaveChangesAsync();
-            return receipt;
         }
 
         public async Task<IEnumerable<ReceiptDto>> GetAllReceiptsAsync()
@@ -124,18 +137,15 @@ namespace Backend.Services
                 throw new InvalidOperationException($"Price is required for '{medicine.Name}'.");
             }
 
-            if (tenantMedicine != null && PosCatalogService.ShouldTrackStock(tenant, tenantMedicine))
-            {
-                await ValidateStockBeforeSaleAsync(tenant, tenantMedicine, item.Quantity, item.MedicineBatchId);
-            }
-
             MedicineBatch? batch = null;
-            if (item.MedicineBatchId.HasValue)
+            if (item.MedicineBatchId.HasValue && tenantMedicine != null)
             {
                 batch = await _context.MedicineBatches
-                    .FirstOrDefaultAsync(b => b.Id == item.MedicineBatchId && b.TenantMedicineId == tenantMedicine!.Id);
+                    .FirstOrDefaultAsync(b => b.Id == item.MedicineBatchId && b.TenantMedicineId == tenantMedicine.Id);
             }
-            else if (tenant.MaintainStock && tenant.InventoryMode == PharmacyInventoryMode.BatchExpiry && tenantMedicine?.IsStockTracked == true)
+            else if (tenant.MaintainStock
+                && tenant.InventoryMode == PharmacyInventoryMode.BatchExpiry
+                && tenantMedicine?.IsStockTracked == true)
             {
                 batch = await SelectFefoBatchAsync(tenantMedicine!.Id, item.Quantity);
             }
@@ -161,14 +171,17 @@ namespace Backend.Services
 
         private async Task<TenantMedicine> UpsertTenantMedicinePriceAsync(Tenant tenant, Medicine medicine, decimal price)
         {
+            var isStockTracked = tenant.MaintainStock && tenant.InventoryMode != PharmacyInventoryMode.CatalogOnly;
             var existing = await _context.TenantMedicines
+                .Include(tm => tm.Stock)
                 .FirstOrDefaultAsync(tm => tm.TenantId == tenant.Id && tm.MedicineId == medicine.Id);
 
             if (existing != null)
             {
                 existing.SellingPrice = price;
+                existing.IsStockTracked = isStockTracked;
                 existing.UpdatedAtUtc = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
+                await EnsureStockRowAsync(tenant.Id, existing, isStockTracked);
                 return existing;
             }
 
@@ -177,51 +190,42 @@ namespace Backend.Services
                 TenantId = tenant.Id,
                 MedicineId = medicine.Id,
                 SellingPrice = price,
-                IsStockTracked = tenant.MaintainStock && tenant.InventoryMode != PharmacyInventoryMode.CatalogOnly,
+                IsStockTracked = isStockTracked,
                 CreatedAtUtc = DateTime.UtcNow,
                 UpdatedAtUtc = DateTime.UtcNow
             };
 
             _context.TenantMedicines.Add(tenantMedicine);
             await _context.SaveChangesAsync();
+            await EnsureStockRowAsync(tenant.Id, tenantMedicine, isStockTracked);
             return tenantMedicine;
         }
 
-        private async Task ValidateStockBeforeSaleAsync(Tenant tenant, TenantMedicine tenantMedicine, int quantity, int? batchId)
+        private async Task EnsureStockRowAsync(int tenantId, TenantMedicine tenantMedicine, bool isStockTracked)
         {
-            if (!tenant.MaintainStock || tenant.InventoryMode == PharmacyInventoryMode.CatalogOnly)
+            if (!isStockTracked || tenantMedicine.Stock != null)
             {
                 return;
             }
 
-            if (tenant.InventoryMode == PharmacyInventoryMode.BatchExpiry)
+            var stock = await _context.MedicineStocks
+                .FirstOrDefaultAsync(s => s.TenantMedicineId == tenantMedicine.Id);
+
+            if (stock != null)
             {
-                if (batchId.HasValue)
-                {
-                    var batch = await _context.MedicineBatches.FirstOrDefaultAsync(b => b.Id == batchId && b.TenantMedicineId == tenantMedicine.Id);
-                    if (batch == null || batch.QuantityOnHand < quantity)
-                    {
-                        throw new InvalidOperationException("Insufficient batch stock.");
-                    }
-                    return;
-                }
-
-                var total = await _context.MedicineBatches
-                    .Where(b => b.TenantMedicineId == tenantMedicine.Id && b.IsActive)
-                    .SumAsync(b => b.QuantityOnHand);
-
-                if (total < quantity)
-                {
-                    throw new InvalidOperationException($"Insufficient stock for '{tenantMedicine.Medicine?.Name ?? "medicine"}'.");
-                }
+                tenantMedicine.Stock = stock;
                 return;
             }
 
-            var stock = await _context.MedicineStocks.FirstOrDefaultAsync(s => s.TenantMedicineId == tenantMedicine.Id);
-            if ((stock?.QuantityOnHand ?? 0) < quantity)
+            stock = new MedicineStock
             {
-                throw new InvalidOperationException($"Insufficient stock for '{tenantMedicine.Medicine?.Name ?? "medicine"}'.");
-            }
+                TenantId = tenantId,
+                TenantMedicineId = tenantMedicine.Id,
+                QuantityOnHand = 0,
+                UpdatedAtUtc = DateTime.UtcNow
+            };
+            _context.MedicineStocks.Add(stock);
+            tenantMedicine.Stock = stock;
         }
 
         private async Task<MedicineBatch?> SelectFefoBatchAsync(int tenantMedicineId, int quantity)
@@ -230,101 +234,6 @@ namespace Backend.Services
                 .Where(b => b.TenantMedicineId == tenantMedicineId && b.IsActive && b.QuantityOnHand >= quantity)
                 .OrderBy(b => b.ExpiryDate)
                 .FirstOrDefaultAsync();
-        }
-
-        private async Task DeductStockAsync(Tenant tenant, ReceiptItem item, int receiptId)
-        {
-            if (item.TenantMedicineId == null || !tenant.MaintainStock || tenant.InventoryMode == PharmacyInventoryMode.CatalogOnly)
-            {
-                return;
-            }
-
-            var tenantMedicine = await _context.TenantMedicines
-                .Include(tm => tm.Stock)
-                .FirstOrDefaultAsync(tm => tm.Id == item.TenantMedicineId);
-
-            if (tenantMedicine == null || !tenantMedicine.IsStockTracked)
-            {
-                return;
-            }
-
-            if (tenant.InventoryMode == PharmacyInventoryMode.BatchExpiry)
-            {
-                var batch = item.MedicineBatchId.HasValue
-                    ? await _context.MedicineBatches.FirstOrDefaultAsync(b => b.Id == item.MedicineBatchId)
-                    : await SelectFefoBatchAsync(tenantMedicine.Id, item.Quantity);
-
-                if (batch == null)
-                {
-                    return;
-                }
-
-                batch.QuantityOnHand -= item.Quantity;
-                item.MedicineBatchId = batch.Id;
-                item.BatchNumber = batch.BatchNumber;
-                item.ExpiryDate = batch.ExpiryDate;
-
-                _context.StockMovements.Add(new StockMovement
-                {
-                    TenantId = tenant.Id,
-                    TenantMedicineId = tenantMedicine.Id,
-                    MedicineBatchId = batch.Id,
-                    MovementType = StockMovementType.Sale,
-                    QuantityDelta = -item.Quantity,
-                    ReferenceType = "Receipt",
-                    ReferenceId = receiptId,
-                    CreatedAtUtc = DateTime.UtcNow
-                });
-
-                await SyncAggregateStockAsync(tenantMedicine);
-                return;
-            }
-
-            var stock = tenantMedicine.Stock ?? await EnsureStockRowAsync(tenant.Id, tenantMedicine.Id);
-            stock.QuantityOnHand -= item.Quantity;
-            stock.UpdatedAtUtc = DateTime.UtcNow;
-
-            _context.StockMovements.Add(new StockMovement
-            {
-                TenantId = tenant.Id,
-                TenantMedicineId = tenantMedicine.Id,
-                MovementType = StockMovementType.Sale,
-                QuantityDelta = -item.Quantity,
-                ReferenceType = "Receipt",
-                ReferenceId = receiptId,
-                CreatedAtUtc = DateTime.UtcNow
-            });
-        }
-
-        private async Task SyncAggregateStockAsync(TenantMedicine tenantMedicine)
-        {
-            var total = await _context.MedicineBatches
-                .Where(b => b.TenantMedicineId == tenantMedicine.Id && b.IsActive)
-                .SumAsync(b => b.QuantityOnHand);
-
-            var stock = tenantMedicine.Stock ?? await EnsureStockRowAsync(tenantMedicine.TenantId, tenantMedicine.Id);
-            stock.QuantityOnHand = total;
-            stock.UpdatedAtUtc = DateTime.UtcNow;
-        }
-
-        private async Task<MedicineStock> EnsureStockRowAsync(int tenantId, int tenantMedicineId)
-        {
-            var stock = await _context.MedicineStocks.FirstOrDefaultAsync(s => s.TenantMedicineId == tenantMedicineId);
-            if (stock != null)
-            {
-                return stock;
-            }
-
-            stock = new MedicineStock
-            {
-                TenantId = tenantId,
-                TenantMedicineId = tenantMedicineId,
-                QuantityOnHand = 0,
-                UpdatedAtUtc = DateTime.UtcNow
-            };
-            _context.MedicineStocks.Add(stock);
-            await _context.SaveChangesAsync();
-            return stock;
         }
     }
 }

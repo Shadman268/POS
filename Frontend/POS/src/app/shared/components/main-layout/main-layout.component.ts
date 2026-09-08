@@ -32,6 +32,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   languages = ['English', 'Bengali'];
   expandedMenus = new Set<string>();
   shopName = 'MedPoint';
+  calculatorOpen = false;
 
   private routerSub?: Subscription;
   private clockInterval?: ReturnType<typeof setInterval>;
@@ -156,6 +157,14 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
 
   goToPos(): void {
     this.router.navigate(['/pos']);
+  }
+
+  toggleCalculator(): void {
+    this.calculatorOpen = !this.calculatorOpen;
+  }
+
+  closeCalculator(): void {
+    this.calculatorOpen = false;
   }
 
   logout(): void {

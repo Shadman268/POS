@@ -288,6 +288,7 @@ namespace Backend.Services
 
         private async Task<TenantMedicine> EnsureTenantMedicineAsync(int tenantId, Medicine medicine, Tenant tenant, decimal price)
         {
+            var isStockTracked = tenant.MaintainStock && tenant.InventoryMode != PharmacyInventoryMode.CatalogOnly;
             var existing = await _context.TenantMedicines
                 .Include(tm => tm.Stock)
                 .Include(tm => tm.Batches)
@@ -296,12 +297,12 @@ namespace Backend.Services
             if (existing != null)
             {
                 existing.SellingPrice = price;
+                existing.IsStockTracked = isStockTracked;
                 existing.UpdatedAtUtc = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
                 return existing;
             }
 
-            var isStockTracked = tenant.MaintainStock && tenant.InventoryMode != PharmacyInventoryMode.CatalogOnly;
             var tenantMedicine = new TenantMedicine
             {
                 TenantId = tenantId,

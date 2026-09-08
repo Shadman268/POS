@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import {
   CartLine,
@@ -133,6 +133,16 @@ export class ProductService {
     return ['All Brand', ...Array.from(new Set(values)).sort()];
   }
 
+  refreshCatalog(): Observable<ProductView[]> {
+    return this.http.get<ProductView[]>(this.api.url('Product')).pipe(
+      map(products => {
+        this.setProducts(products);
+        return this.allProducts;
+      }),
+      tap(() => this.cartChanged.next())
+    );
+  }
+
   private promptPriceAndAdd(product: ProductView, onAdded?: () => void): void {
     const dialogRef = this.dialog.open<SetPriceDialogComponent, SetPriceDialogData, SetPriceDialogResult>(
       SetPriceDialogComponent,
@@ -160,8 +170,8 @@ export class ProductService {
       next: (response) => {
         if (response.success && response.item) {
           const resolved = this.fromDto(response.item);
-          this.addProductInReceipt(resolved);
           this.updateCachedProduct(resolved);
+          this.addProductInReceipt(resolved);
           onAdded?.();
           return;
         }

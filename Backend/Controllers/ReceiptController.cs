@@ -32,7 +32,7 @@ namespace Backend.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return Conflict(new { message = ex.Message });
             }
         }
 

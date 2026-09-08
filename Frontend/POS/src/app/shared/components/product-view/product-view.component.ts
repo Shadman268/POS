@@ -11,11 +11,8 @@ import { ApiConfigService } from '../../../core/services/api-config.service';
   styleUrls: ['./product-view.component.scss']
 })
 export class ProductViewComponent implements OnInit {
-  products: ProductView[] = [];
   filteredProducts: ProductView[] = [];
-  categories: string[] = ['All Category'];
   brands: string[] = ['All Brand'];
-  selectedCategory = 'All Category';
   selectedBrand = 'All Brand';
   maintainStock = true;
 
@@ -32,16 +29,15 @@ export class ProductViewComponent implements OnInit {
     });
 
     this.http.get<ProductView[]>(this.api.url('Product')).subscribe(data => {
-      this.products = data;
       this.productService.setProducts(data);
-      this.categories = this.productService.getCategories();
       this.brands = this.productService.getBrands();
       this.applyFilter();
     });
-  }
 
-  onCategoryChange(): void {
-    this.applyFilter();
+    this.productService.cartChanged$.subscribe(() => {
+      this.brands = this.productService.getBrands();
+      this.applyFilter();
+    });
   }
 
   onBrandChange(): void {
@@ -49,13 +45,14 @@ export class ProductViewComponent implements OnInit {
   }
 
   applyFilter(): void {
-    this.filteredProducts = this.products.filter(p => {
-      const category = p.category || 'Medicine';
+    this.filteredProducts = this.productService.allProducts.filter(p => {
       const brand = p.brand || 'General';
-      const categoryMatch = this.selectedCategory === 'All Category' || category === this.selectedCategory;
-      const brandMatch = this.selectedBrand === 'All Brand' || brand === this.selectedBrand;
-      return categoryMatch && brandMatch;
+      return this.selectedBrand === 'All Brand' || brand === this.selectedBrand;
     });
+  }
+
+  needsPrice(product: ProductView): boolean {
+    return !product.hasTenantPrice && (product.requiresPrice === true || +product.price <= 0);
   }
 
   stockLevel(stock: number): 'good' | 'low' | 'out' {
