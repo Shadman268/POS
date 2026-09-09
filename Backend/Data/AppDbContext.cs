@@ -108,6 +108,15 @@ namespace Backend.Data
                 .HasForeignKey(r => r.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Receipt>()
+                .HasOne(r => r.OriginalReceipt)
+                .WithMany()
+                .HasForeignKey(r => r.OriginalReceiptId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Receipt>()
+                .HasIndex(r => new { r.TenantId, r.OriginalReceiptId });
+
             modelBuilder.Entity<Tenant>()
                 .HasIndex(t => t.ShopCode)
                 .IsUnique();

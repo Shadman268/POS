@@ -13,6 +13,8 @@ namespace Backend.Models
         [ForeignKey("Receipt")]
         public int ReceiptId { get; set; }
 
+        public int? OriginalReceiptItemId { get; set; }
+
         public SaleLineType LineType { get; set; } = SaleLineType.Medicine;
 
         public int? MedicineId { get; set; }

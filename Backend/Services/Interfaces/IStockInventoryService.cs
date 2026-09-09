@@ -7,6 +7,8 @@ namespace Backend.Services.Interfaces
     {
         Task DeductForSaleAsync(Tenant tenant, ReceiptItem item, int receiptId);
 
+        Task RestoreForReturnAsync(Tenant tenant, ReceiptItem item, int returnReceiptId);
+
         Task<int?> TryGetAvailableStockAsync(Tenant tenant, TenantMedicine tenantMedicine);
     }
 

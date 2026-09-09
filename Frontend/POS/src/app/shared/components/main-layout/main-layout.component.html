@@ -93,6 +93,17 @@
         <button
           mat-icon-button
           class="utility-btn"
+          aria-label="Return"
+          matTooltip="Return"
+          [class.active]="productService.isAdjustmentMode"
+          (click)="openReturnReceipt()"
+        >
+          <mat-icon>assignment_return</mat-icon>
+        </button>
+
+        <button
+          mat-icon-button
+          class="utility-btn"
           aria-label="Calculator"
           matTooltip="Calculator"
           [class.active]="calculatorOpen"

@@ -1,4 +1,15 @@
-<div class="journal-container">
+<div class="journal-container" [class.adjustment-mode]="productService.isAdjustmentMode">
+  <div class="return-banner" *ngIf="productService.adjustmentContext as adjustCtx">
+    <div class="return-banner-text">
+      <mat-icon>assignment_return</mat-icon>
+      <div>
+        <strong>Returning receipt #{{ adjustCtx.originalReceiptId }}</strong>
+        <small>Previous total ৳{{ adjustCtx.originalTotal }} · add, remove, or change quantities</small>
+      </div>
+    </div>
+    <button type="button" class="cancel-return-btn" (click)="cancelAdjustment()">Cancel</button>
+  </div>
+
   <!-- Customer row -->
   <div class="customer-row">
     <span class="customer-name">{{ customerName }}</span>
@@ -139,15 +150,26 @@
       <span>VAT ({{ vatPercent }}%)</span>
       <span>৳{{ getVatAmount() }}</span>
     </div>
+    <div class="summary-row" *ngIf="productService.isAdjustmentMode">
+      <span>Previous total</span>
+      <span>৳{{ productService.adjustmentContext?.originalTotal }}</span>
+    </div>
     <div class="summary-row total-row">
       <span>Total</span>
       <span class="total-amount">৳{{ getTotal() }}</span>
     </div>
 
     <div class="action-buttons">
-      <button type="button" class="hold-btn" (click)="holdOrder()">Hold</button>
-      <button type="button" class="charge-btn" (click)="processPayment()">
-        Charge ৳{{ getTotal() }}
+      <button type="button" class="hold-btn" *ngIf="!productService.isAdjustmentMode" (click)="holdOrder()">Hold</button>
+      <button
+        type="button"
+        class="charge-btn"
+        [class.return-btn]="productService.isAdjustmentMode && getAdjustmentDelta() < 0"
+        [class.extra-btn]="productService.isAdjustmentMode && getAdjustmentDelta() > 0"
+        [disabled]="submitting || (!productService.isAdjustmentMode && productService.receiptItems.length === 0)"
+        (click)="processPayment()"
+      >
+        {{ getActionLabel() }}
       </button>
     </div>
   </div>

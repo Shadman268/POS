@@ -1,5 +1,5 @@
 <div class="receipt-preview">
-    <h2 mat-dialog-title>Receipt Preview</h2>
+    <h2 mat-dialog-title>{{ previewTitle }}</h2>
 
     <mat-dialog-content>
         <div class="receipt-content">
@@ -18,6 +18,9 @@
             <div class="receipt-details">
                 <p><strong>Date:</strong> {{currentDate | date:'medium'}}</p>
                 <p><strong>Receipt #:</strong> {{receipt.id || 'NEW'}}</p>
+                <p *ngIf="receipt.originalReceiptId">
+                    <strong>Original Receipt #:</strong> {{ receipt.originalReceiptId }}
+                </p>
                 <p><strong>Customer:</strong> {{receipt.customerName}}</p>
             </div>
 
@@ -59,15 +62,27 @@
                     </div>
                 </ng-container>
 
-                <div class="total-line">
-                    <span>Cash Received:</span>
-                    <span>{{receipt.cashReceived | number:'1.2-2'}}</span>
-                </div>
+                <ng-container *ngIf="receipt.isAdjustment || receipt.isReturn; else saleTotals">
+                    <div class="total-line" *ngIf="(receipt.adjustmentDelta || 0) < 0 || receipt.isReturn">
+                        <span>Return:</span>
+                        <span>{{ refundAmount | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="total-line" *ngIf="(receipt.adjustmentDelta || 0) > 0">
+                        <span>Extra charge:</span>
+                        <span>{{ receipt.adjustmentDelta | number:'1.2-2' }}</span>
+                    </div>
+                </ng-container>
+                <ng-template #saleTotals>
+                    <div class="total-line">
+                        <span>Cash Received:</span>
+                        <span>{{receipt.cashReceived | number:'1.2-2'}}</span>
+                    </div>
 
-                <div class="total-line">
-                    <span>Change:</span>
-                    <span>{{receipt.changeAmount | number:'1.2-2'}}</span>
-                </div>
+                    <div class="total-line">
+                        <span>Change:</span>
+                        <span>{{receipt.changeAmount | number:'1.2-2'}}</span>
+                    </div>
+                </ng-template>
             </div>
 
             <div class="footer">

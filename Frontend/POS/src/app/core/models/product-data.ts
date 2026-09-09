@@ -46,4 +46,9 @@ export interface CartLine {
     lineDiscountUnit?: LineDiscountUnit;
     imagePath?: string;
     category?: string;
+    receiptItemId?: number;
+    soldQuantity?: number;
+    alreadyReturnedQuantity?: number;
+    returnableQuantity?: number;
+    originalLineDiscount?: number;
 }

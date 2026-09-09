@@ -22,6 +22,20 @@ export class ReceiptPreviewComponent {
         this.footerLines = this.splitLines(receipt.receiptFooter);
     }
 
+    get previewTitle(): string {
+        if (this.receipt.isAdjustment) {
+            return (this.receipt.adjustmentDelta || 0) < 0 ? 'Return Receipt' : 'Adjusted Receipt';
+        }
+        return this.receipt.isReturn ? 'Return Receipt' : 'Receipt Preview';
+    }
+
+    get refundAmount(): number {
+        if (this.receipt.adjustmentDelta != null && this.receipt.adjustmentDelta < 0) {
+            return Math.abs(this.receipt.adjustmentDelta);
+        }
+        return this.receipt.changeAmount || this.receipt.priceAfterDiscount || 0;
+    }
+
     downloadPdf(): void {
         const doc = this.receiptPdfService.generateReceiptPdf(this.receipt);
         const timestamp = new Date().getTime();

@@ -1,9 +1,13 @@
-using Backend.Models;
+using Backend.Models.Enums;
 
 namespace Backend.DTOs
 {
     public class ReceiptDto
     {
+        public int Id { get; set; }
+        public ReceiptType ReceiptType { get; set; } = ReceiptType.Sale;
+        public int? OriginalReceiptId { get; set; }
+        public DateTime CreatedAt { get; set; }
         public string CustomerName { get; set; } = string.Empty;
         public decimal Total { get; set; }
         public string DiscountUnit { get; set; } = string.Empty;

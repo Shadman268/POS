@@ -34,9 +34,11 @@ export class JournalComponent implements OnInit, OnDestroy {
   showLineDiscount = false;
   showVat = false;
   vatPercent = 5;
+  submitting = false;
 
   private readonly destroy$ = new Subject<void>();
   private latestSearchQuery = '';
+  private loadedAdjustmentId: number | null = null;
 
   constructor(
     protected productService: ProductService,
@@ -51,6 +53,19 @@ export class JournalComponent implements OnInit, OnDestroy {
       this.showLineDiscount = settings?.showLineDiscount ?? false;
       this.showVat = settings?.showVat ?? false;
       this.vatPercent = settings?.vatPercent ?? 5;
+    });
+
+    this.productService.cartChanged$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      const context = this.productService.adjustmentContext;
+      if (context && context.originalReceiptId !== this.loadedAdjustmentId) {
+        this.loadedAdjustmentId = context.originalReceiptId;
+        this.customerName = context.customerName;
+        this.discountAmount = context.originalDiscount;
+        this.discountUnit = 'BDT';
+      }
+      if (!context) {
+        this.loadedAdjustmentId = null;
+      }
     });
 
     this.searchControl.valueChanges.pipe(
@@ -306,6 +321,30 @@ export class JournalComponent implements OnInit, OnDestroy {
     return this.getSubtotal() - this.getDiscountValue() + this.getVatAmount();
   }
 
+  getAdjustmentDelta(): number {
+    const original = this.productService.adjustmentContext?.originalTotal ?? 0;
+    return this.roundMoney(this.getTotal() - original);
+  }
+
+  getActionLabel(): string {
+    if (!this.productService.isAdjustmentMode) {
+      return `Charge ৳${this.getTotal()}`;
+    }
+
+    const delta = this.getAdjustmentDelta();
+    if (delta < 0) {
+      return `Return ৳${this.roundMoney(-delta)}`;
+    }
+    if (delta > 0) {
+      return `Extra charge ৳${delta}`;
+    }
+    return 'Confirm adjustment';
+  }
+
+  private roundMoney(value: number): number {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+  }
+
   getLineTotal(index: number): number {
     const item = this.productService.receiptItems[index];
     return this.getLineGrossTotal(item);
@@ -355,7 +394,12 @@ export class JournalComponent implements OnInit, OnDestroy {
   }
 
   processPayment(): void {
-    if (this.productService.receiptItems.length === 0) {
+    if (this.productService.isAdjustmentMode) {
+      this.processAdjustment();
+      return;
+    }
+
+    if (this.productService.receiptItems.length === 0 || this.submitting) {
       return;
     }
 
@@ -389,26 +433,110 @@ export class JournalComponent implements OnInit, OnDestroy {
       showLineDiscount: this.showLineDiscount
     };
 
+    this.submitting = true;
     this.receiptService.createReceipt(receiptData).subscribe({
       next: (response) => {
         this.productService.refreshCatalog().subscribe({
           next: () => {
             this.receiptPdfService.showReceiptPreview(response || receiptData).subscribe(() => {
+              this.submitting = false;
               this.clearReceipt();
             });
           },
           error: () => {
             this.receiptPdfService.showReceiptPreview(response || receiptData).subscribe(() => {
+              this.submitting = false;
               this.clearReceipt();
             });
           }
         });
       },
       error: (error) => {
+        this.submitting = false;
         const message = error.error?.message || 'Could not complete sale.';
         window.alert(message);
       }
     });
+  }
+
+  processAdjustment(): void {
+    const context = this.productService.adjustmentContext;
+    if (!context || this.submitting) {
+      return;
+    }
+
+    const subtotal = this.getSubtotal();
+    const discount = this.getDiscountValue();
+    const total = this.getTotal();
+    const delta = this.getAdjustmentDelta();
+    const settings = this.tenantSettingsService.settings;
+
+    const receiptData: ReceiptData = {
+      originalReceiptId: context.originalReceiptId,
+      customerName: this.customerName,
+      shopName: settings?.name,
+      total: subtotal,
+      discountValue: discount,
+      discountUnit: 'BDT',
+      priceAfterDiscount: total,
+      cashReceived: delta > 0 ? delta : 0,
+      changeAmount: delta < 0 ? -delta : 0,
+      items: this.productService.receiptItems.map(item => ({
+        productId: item.productId,
+        productName: item.productName,
+        quantity: item.quantity,
+        price: item.price,
+        lineDiscount: this.showLineDiscount ? this.getLineDiscountAmount(item) : 0,
+        subtotal: this.getLineGrossTotal(item)
+      })),
+      receiptHeader: settings?.receiptHeader,
+      receiptFooter: settings?.receiptFooter,
+      showLineDiscount: this.showLineDiscount
+    };
+
+    this.submitting = true;
+    this.receiptService.returnReceipt(receiptData).subscribe({
+      next: (response) => {
+        const preview: ReceiptData = {
+          ...response,
+          shopName: settings?.name,
+          receiptHeader: settings?.receiptHeader,
+          receiptFooter: settings?.receiptFooter,
+          showLineDiscount: this.showLineDiscount,
+          isAdjustment: true,
+          isReturn: delta < 0,
+          originalReceiptId: context.originalReceiptId,
+          adjustmentDelta: delta
+        };
+
+        this.productService.refreshCatalog().subscribe({
+          next: () => {
+            this.receiptPdfService.showReceiptPreview(preview).subscribe(() => {
+              this.submitting = false;
+              this.clearReceipt();
+            });
+          },
+          error: () => {
+            this.receiptPdfService.showReceiptPreview(preview).subscribe(() => {
+              this.submitting = false;
+              this.clearReceipt();
+            });
+          }
+        });
+      },
+      error: (error) => {
+        this.submitting = false;
+        const message = error.error?.message || 'Could not complete adjustment.';
+        window.alert(message);
+      }
+    });
+  }
+
+  cancelAdjustment(): void {
+    this.productService.exitAdjustmentMode();
+    this.discountAmount = 0;
+    this.discountUnit = 'BDT';
+    this.customerName = 'Walk-in Customer';
   }
 
   clearReceipt(): void {

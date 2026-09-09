@@ -26,6 +26,7 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AddProductDialogComponent } from './shared/dialogs/add-product-dialog/add-product-dialog.component';
 import { AddTenantProductDialogComponent } from './shared/dialogs/add-tenant-product-dialog/add-tenant-product-dialog.component';
 import { SetPriceDialogComponent } from './shared/dialogs/set-price-dialog/set-price-dialog.component';
+import { AdjustReceiptDialogComponent } from './shared/dialogs/adjust-receipt-dialog/adjust-receipt-dialog.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -52,6 +53,7 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     AddProductDialogComponent,
     AddTenantProductDialogComponent,
     SetPriceDialogComponent,
+    AdjustReceiptDialogComponent,
     LoginComponent,
     RegisterComponent,
     MainLayoutComponent,

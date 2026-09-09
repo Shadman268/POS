@@ -57,6 +57,107 @@ namespace Backend.Services
             await DeductAggregateStockAsync(tenant, item, receiptId);
         }
 
+        public async Task RestoreForReturnAsync(Tenant tenant, ReceiptItem item, int returnReceiptId)
+        {
+            if (item.TenantMedicineId == null || !await IsStockTrackedAsync(tenant, item.TenantMedicineId.Value))
+            {
+                return;
+            }
+
+            if (tenant.InventoryMode == PharmacyInventoryMode.BatchExpiry && item.MedicineBatchId.HasValue)
+            {
+                await RestoreBatchStockAsync(tenant, item, returnReceiptId);
+                return;
+            }
+
+            await RestoreAggregateStockAsync(tenant, item, returnReceiptId);
+        }
+
+        private async Task RestoreAggregateStockAsync(Tenant tenant, ReceiptItem item, int returnReceiptId)
+        {
+            var tenantMedicineId = item.TenantMedicineId!.Value;
+            var quantity = item.Quantity;
+            var now = DateTime.UtcNow;
+
+            var rowsAffected = await _context.Database.ExecuteSqlRawAsync(
+                """
+                UPDATE ms
+                SET ms.QuantityOnHand = ms.QuantityOnHand + @quantity,
+                    ms.UpdatedAtUtc = @now
+                FROM MedicineStocks ms WITH (UPDLOCK, ROWLOCK)
+                WHERE ms.TenantMedicineId = @tenantMedicineId
+                  AND ms.TenantId = @tenantId
+                """,
+                new SqlParameter("@quantity", quantity),
+                new SqlParameter("@now", now),
+                new SqlParameter("@tenantMedicineId", tenantMedicineId),
+                new SqlParameter("@tenantId", tenant.Id));
+
+            if (rowsAffected == 0)
+            {
+                _context.MedicineStocks.Add(new MedicineStock
+                {
+                    TenantId = tenant.Id,
+                    TenantMedicineId = tenantMedicineId,
+                    QuantityOnHand = quantity,
+                    UpdatedAtUtc = now
+                });
+            }
+
+            _context.StockMovements.Add(new StockMovement
+            {
+                TenantId = tenant.Id,
+                TenantMedicineId = tenantMedicineId,
+                MovementType = StockMovementType.Return,
+                QuantityDelta = quantity,
+                ReferenceType = "Receipt",
+                ReferenceId = returnReceiptId,
+                CreatedAtUtc = now
+            });
+        }
+
+        private async Task RestoreBatchStockAsync(Tenant tenant, ReceiptItem item, int returnReceiptId)
+        {
+            var tenantMedicineId = item.TenantMedicineId!.Value;
+            var quantity = item.Quantity;
+            var now = DateTime.UtcNow;
+            var batchId = item.MedicineBatchId!.Value;
+
+            var rowsAffected = await _context.Database.ExecuteSqlRawAsync(
+                """
+                UPDATE mb
+                SET mb.QuantityOnHand = mb.QuantityOnHand + @quantity
+                FROM MedicineBatches mb WITH (UPDLOCK, ROWLOCK)
+                WHERE mb.Id = @batchId
+                  AND mb.TenantMedicineId = @tenantMedicineId
+                  AND mb.TenantId = @tenantId
+                """,
+                new SqlParameter("@quantity", quantity),
+                new SqlParameter("@batchId", batchId),
+                new SqlParameter("@tenantMedicineId", tenantMedicineId),
+                new SqlParameter("@tenantId", tenant.Id));
+
+            if (rowsAffected == 0)
+            {
+                await RestoreAggregateStockAsync(tenant, item, returnReceiptId);
+                return;
+            }
+
+            _context.StockMovements.Add(new StockMovement
+            {
+                TenantId = tenant.Id,
+                TenantMedicineId = tenantMedicineId,
+                MedicineBatchId = batchId,
+                MovementType = StockMovementType.Return,
+                QuantityDelta = quantity,
+                ReferenceType = "Receipt",
+                ReferenceId = returnReceiptId,
+                CreatedAtUtc = now
+            });
+
+            await SyncAggregateStockAsync(tenant.Id, tenantMedicineId, now);
+        }
+
         internal static bool ShouldTrackStock(Tenant tenant, TenantMedicine tenantMedicine)
         {
             return tenant.MaintainStock

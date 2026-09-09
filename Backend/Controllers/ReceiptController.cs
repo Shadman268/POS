@@ -36,6 +36,42 @@ namespace Backend.Controllers
             }
         }
 
+        [HttpPost("return")]
+        public async Task<IActionResult> CreateReturn([FromBody] AdjustReceiptDto request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var receipt = await _receiptService.CreateAdjustmentAsync(request);
+                return CreatedAtAction(nameof(GetReceiptById), new { id = receipt.Id }, receipt);
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (ex.Message.Contains("was not found", StringComparison.OrdinalIgnoreCase))
+                {
+                    return NotFound(new { message = ex.Message });
+                }
+
+                return Conflict(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}/return")]
+        public async Task<ActionResult<ReceiptDto>> GetReturnableReceipt(int id)
+        {
+            var receipt = await _receiptService.GetAdjustableReceiptAsync(id);
+            if (receipt == null)
+            {
+                return NotFound(new { message = $"Receipt #{id} was not found." });
+            }
+
+            return Ok(receipt);
+        }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ReceiptDto>>> GetAllReceipts()
         {

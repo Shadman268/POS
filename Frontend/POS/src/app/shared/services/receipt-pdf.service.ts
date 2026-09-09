@@ -43,7 +43,10 @@ export class ReceiptPdfService {
 
         currentY += 8;
         doc.setFontSize(12);
-        doc.text('SALES RECEIPT', pageWidth / 2, currentY, { align: 'center' });
+        const title = receipt.isAdjustment
+            ? ((receipt.adjustmentDelta || 0) < 0 ? 'RETURN RECEIPT' : 'ADJUSTED RECEIPT')
+            : (receipt.isReturn ? 'RETURN RECEIPT' : 'SALES RECEIPT');
+        doc.text(title, pageWidth / 2, currentY, { align: 'center' });
 
         currentY += 10;
         doc.setFontSize(10);
@@ -51,6 +54,10 @@ export class ReceiptPdfService {
         doc.text(`Date: ${currentDate}`, 15, currentY);
         currentY += 5;
         doc.text(`Receipt #: ${receipt.id || 'NEW'}`, 15, currentY);
+        if (receipt.originalReceiptId) {
+            currentY += 5;
+            doc.text(`Original Receipt #: ${receipt.originalReceiptId}`, 15, currentY);
+        }
         currentY += 5;
         doc.text(`Customer: ${receipt.customerName}`, 15, currentY);
 
@@ -107,10 +114,20 @@ export class ReceiptPdfService {
             rightAlign(`After Discount: ${receipt.priceAfterDiscount.toFixed(2)}`, totalsY);
         }
 
-        totalsY += 5;
-        rightAlign(`Cash Received: ${receipt.cashReceived.toFixed(2)}`, totalsY);
-        totalsY += 5;
-        rightAlign(`Change: ${receipt.changeAmount.toFixed(2)}`, totalsY);
+        if (receipt.isAdjustment || receipt.isReturn) {
+            const delta = receipt.adjustmentDelta ?? 0;
+            totalsY += 5;
+            if (delta < 0 || receipt.isReturn) {
+                rightAlign(`Return: ${Math.abs(delta || receipt.changeAmount || receipt.priceAfterDiscount).toFixed(2)}`, totalsY);
+            } else if (delta > 0) {
+                rightAlign(`Extra charge: ${delta.toFixed(2)}`, totalsY);
+            }
+        } else {
+            totalsY += 5;
+            rightAlign(`Cash Received: ${receipt.cashReceived.toFixed(2)}`, totalsY);
+            totalsY += 5;
+            rightAlign(`Change: ${receipt.changeAmount.toFixed(2)}`, totalsY);
+        }
 
         totalsY += 15;
         const footerLines = this.splitLines(receipt.receiptFooter);

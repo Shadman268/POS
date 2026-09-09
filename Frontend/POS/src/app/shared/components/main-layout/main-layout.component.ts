@@ -1,7 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../../core/services/auth.service';
 import { TenantSettingsService } from '../../services/tenant-settings.service';
+import { ProductService } from '../../services/product.service';
+import { ReceiptService } from '../../services/receipt.service';
+import { AdjustReceiptDialogComponent } from '../../dialogs/adjust-receipt-dialog/adjust-receipt-dialog.component';
 import { User } from '../../../core/models/user';
 import { filter, Subscription } from 'rxjs';
 
@@ -68,7 +72,10 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private tenantSettingsService: TenantSettingsService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog,
+    private receiptService: ReceiptService,
+    public productService: ProductService
   ) {}
 
   ngOnInit(): void {
@@ -157,6 +164,63 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
 
   goToPos(): void {
     this.router.navigate(['/pos']);
+  }
+
+  openReturnReceipt(): void {
+    const dialogRef = this.dialog.open(AdjustReceiptDialogComponent, {
+      width: '420px',
+      maxWidth: '95vw'
+    });
+
+    dialogRef.afterClosed().subscribe(receiptNo => {
+      if (!receiptNo) {
+        return;
+      }
+
+      const receiptId = this.parseReceiptNumber(receiptNo);
+      if (!receiptId) {
+        window.alert('Enter a valid receipt number.');
+        return;
+      }
+
+      if (this.productService.receiptItems.length > 0 && !this.productService.isAdjustmentMode) {
+        const proceed = window.confirm('The current cart will be replaced with this receipt. Continue?');
+        if (!proceed) {
+          return;
+        }
+      }
+
+      this.receiptService.getReturnableReceipt(receiptId).subscribe({
+        next: (receipt) => {
+          if (!receipt.items?.length) {
+            window.alert('This receipt has no items to return.');
+            return;
+          }
+
+          this.productService.loadAdjustmentCart(receipt);
+          if (!this.router.url.startsWith('/pos')) {
+            this.router.navigate(['/pos']);
+          }
+        },
+        error: (error) => {
+          if (error.status === 404) {
+            window.alert(`Receipt #${receiptId} was not found.`);
+            return;
+          }
+          window.alert(error.error?.message || 'Could not load that receipt.');
+        }
+      });
+    });
+  }
+
+  private parseReceiptNumber(value: string): number | null {
+    const digits = (value || '').replace(/[^\d]/g, '');
+    if (!digits) {
+      return null;
+    }
+
+    const id = parseInt(digits, 10);
+    return id > 0 ? id : null;
   }
 
   toggleCalculator(): void {

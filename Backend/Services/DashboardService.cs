@@ -1,5 +1,6 @@
 using Backend.Data;
 using Backend.DTOs;
+using Backend.Models.Enums;
 using Backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,7 +39,7 @@ namespace Backend.Services
             var previousPurchase = previousSales * EstimatedPurchaseRatio;
 
             var dueReceipts = periodReceipts
-                .Where(r => GetFinalAmount(r) > r.CashReceived)
+                .Where(r => r.ReceiptType != ReceiptType.Return && GetFinalAmount(r) > r.CashReceived)
                 .ToList();
 
             var invoiceDue = dueReceipts.Sum(r => GetFinalAmount(r) - r.CashReceived);
@@ -78,7 +79,7 @@ namespace Backend.Services
                 var nextDay = day.AddDays(1);
                 var dayTotal = receipts
                     .Where(r => r.CreatedAt >= day && r.CreatedAt < nextDay)
-                    .Sum(GetFinalAmount);
+                    .Sum(SignedAmount);
 
                 chart.Add(new SalesChartPointDto
                 {
@@ -126,7 +127,7 @@ namespace Backend.Services
                 InvoiceNumber = $"INV-{r.Id:D4}",
                 CustomerName = r.CustomerName,
                 ItemCount = r.Items.Count,
-                Amount = GetFinalAmount(r),
+                Amount = SignedAmount(r),
                 Status = ResolveStatus(r),
                 CreatedAt = r.CreatedAt
             }).ToList();
@@ -134,6 +135,16 @@ namespace Backend.Services
 
         private static string ResolveStatus(Models.Receipt receipt)
         {
+            if (receipt.ReceiptType == ReceiptType.Return)
+            {
+                return "Returned";
+            }
+
+            if (receipt.ReceiptType == ReceiptType.Adjustment)
+            {
+                return receipt.ChangeAmount > 0 ? "Returned" : "Adjusted";
+            }
+
             var finalAmount = GetFinalAmount(receipt);
             if (receipt.CashReceived >= finalAmount)
             {
@@ -153,9 +164,20 @@ namespace Backend.Services
             return receipt.PriceAfterDiscount > 0 ? receipt.PriceAfterDiscount : receipt.Total;
         }
 
+        private static decimal SignedAmount(Models.Receipt receipt)
+        {
+            if (receipt.ReceiptType == ReceiptType.Adjustment)
+            {
+                return receipt.CashReceived - receipt.ChangeAmount;
+            }
+
+            var amount = GetFinalAmount(receipt);
+            return receipt.ReceiptType == ReceiptType.Return ? -amount : amount;
+        }
+
         private static decimal SumReceiptTotals(IEnumerable<Models.Receipt> receipts)
         {
-            return receipts.Sum(GetFinalAmount);
+            return receipts.Sum(SignedAmount);
         }
 
         private static decimal CalculateTrend(decimal current, decimal previous)

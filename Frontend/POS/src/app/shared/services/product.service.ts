@@ -11,6 +11,7 @@ import {
   ResolvePosItemRequest,
   ResolvePosItemResponse
 } from 'src/app/core/models/product-data';
+import { ReceiptData } from 'src/app/core/models/receipt';
 import { ApiConfigService } from '../../core/services/api-config.service';
 import { SignalrService } from './signalr.service';
 import {
@@ -26,8 +27,20 @@ export class ProductService {
 
   allProducts: ProductView[] = [];
   receiptItems: CartLine[] = [];
+  adjustmentContext: {
+    originalReceiptId: number;
+    customerName: string;
+    originalTotal: number;
+    originalSubtotal: number;
+    originalDiscount: number;
+    createdAt?: string | Date;
+  } | null = null;
   private cartChanged = new Subject<void>();
   cartChanged$ = this.cartChanged.asObservable();
+
+  get isAdjustmentMode(): boolean {
+    return this.adjustmentContext != null;
+  }
 
   constructor(
     private http: HttpClient,
@@ -64,6 +77,36 @@ export class ProductService {
     const normalized = this.normalizeProduct(product);
     // Server is the source of truth for whether a tenant price already exists.
     this.resolveAndAdd(normalized, undefined, onAdded);
+  }
+
+  loadAdjustmentCart(receipt: ReceiptData): void {
+    this.receiptItems = (receipt.items || []).map(item => ({
+      productId: item.productId,
+      productName: item.productName,
+      price: item.price,
+      quantity: item.quantity,
+      unit: 'Unit',
+      lineDiscount: item.lineDiscount ?? 0,
+      lineDiscountUnit: 'BDT' as LineDiscountUnit,
+      receiptItemId: item.id
+    }));
+
+    const originalTotal = receipt.priceAfterDiscount > 0 ? receipt.priceAfterDiscount : receipt.total;
+    this.adjustmentContext = {
+      originalReceiptId: receipt.id as number,
+      customerName: receipt.customerName,
+      originalTotal,
+      originalSubtotal: receipt.total,
+      originalDiscount: receipt.discountValue,
+      createdAt: receipt.createdAt
+    };
+    this.cartChanged.next();
+  }
+
+  exitAdjustmentMode(): void {
+    this.adjustmentContext = null;
+    this.receiptItems = [];
+    this.cartChanged.next();
   }
 
   addProductInReceipt(product: ProductView): void {
@@ -120,6 +163,7 @@ export class ProductService {
 
   clearReceipt(): void {
     this.receiptItems = [];
+    this.adjustmentContext = null;
     this.cartChanged.next();
   }
 
