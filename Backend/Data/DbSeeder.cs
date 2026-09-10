@@ -25,16 +25,13 @@ namespace Backend.Data
 
             foreach (var tenant in tenants)
             {
-                if (!await context.Tenants.AnyAsync(t => t.ShopCode == tenant.ShopCode))
+                if (await context.Tenants.AnyAsync(t => t.ShopCode == tenant.ShopCode))
                 {
-                    tenant.CreatedAtUtc = DateTime.UtcNow;
-                    context.Tenants.Add(tenant);
+                    continue;
                 }
-                else
-                {
-                    var existing = await context.Tenants.FirstAsync(t => t.ShopCode == tenant.ShopCode);
-                    existing.MaintainStock = tenant.MaintainStock;
-                }
+
+                tenant.CreatedAtUtc = DateTime.UtcNow;
+                context.Tenants.Add(tenant);
             }
 
             await context.SaveChangesAsync();

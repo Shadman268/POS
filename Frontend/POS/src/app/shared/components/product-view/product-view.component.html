@@ -27,7 +27,7 @@
       </div>
 
       <span class="price" [class.set-price]="needsPrice(product)">
-        {{ needsPrice(product) ? 'Set price' : ('৳' + product.price) }}
+        {{ needsPrice(product) ? 'Set price' : ('৳' + (product.price | amount)) }}
       </span>
     </div>
 

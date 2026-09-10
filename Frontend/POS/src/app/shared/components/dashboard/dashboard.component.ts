@@ -3,6 +3,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { DashboardPeriod, DashboardSummary, SalesChartPoint } from '../../../core/models/dashboard';
 import { DashboardService } from '../../services/dashboard.service';
 import { User } from '../../../core/models/user';
+import { formatAmount } from '../../pipes/amount.pipe';
 
 @Component({
   selector: 'app-dashboard',
@@ -63,7 +64,7 @@ export class DashboardComponent implements OnInit {
   }
 
   formatCurrency(value: number): string {
-    return `৳ ${value.toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    return `৳ ${formatAmount(value)}`;
   }
 
   formatTrend(value: number): string {

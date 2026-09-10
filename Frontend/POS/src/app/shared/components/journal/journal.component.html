@@ -4,7 +4,7 @@
       <mat-icon>assignment_return</mat-icon>
       <div>
         <strong>Returning receipt #{{ adjustCtx.originalReceiptId }}</strong>
-        <small>Previous total ৳{{ adjustCtx.originalTotal }} · add, remove, or change quantities</small>
+        <small>Previous total ৳{{ adjustCtx.originalTotal | amount }} · add, remove, or change quantities</small>
       </div>
     </div>
     <button type="button" class="cancel-return-btn" (click)="cancelAdjustment()">Cancel</button>
@@ -45,7 +45,7 @@
             <small *ngIf="product.genericName">{{ product.genericName }}</small>
           </span>
           <span class="auto-price" [class.set-price]="needsPrice(product)">
-            {{ needsPrice(product) ? 'Set price' : ('৳' + product.price) }}
+            {{ needsPrice(product) ? 'Set price' : ('৳' + (product.price | amount)) }}
           </span>
         </button>
       </div>
@@ -60,7 +60,7 @@
     <div class="line-item" *ngFor="let item of productService.receiptItems; let i = index">
       <div class="line-details">
         <span class="line-name">{{ item.productName }}</span>
-        <span class="line-unit-price">৳{{ item.price }} / {{ item.unit }}</span>
+        <span class="line-unit-price">৳{{ item.price | amount }} / {{ item.unit }}</span>
       </div>
       <div class="line-discount" *ngIf="showLineDiscount">
         <label>Disc</label>
@@ -98,7 +98,7 @@
         />
         <button type="button" class="qty-btn" (click)="increaseQuantity(i)">+</button>
       </div>
-      <span class="line-total">৳{{ getLineTotal(i) }}</span>
+      <span class="line-total">৳{{ getLineTotal(i) | amount }}</span>
       <button type="button" class="delete-btn" (click)="removeItem(i)">
         <mat-icon>delete_outline</mat-icon>
       </button>
@@ -115,7 +115,7 @@
   <div class="summary-section">
     <div class="summary-row">
       <span>Subtotal</span>
-      <span>৳{{ getSubtotal() }}</span>
+      <span>৳{{ getSubtotal() | amount }}</span>
     </div>
     <div class="summary-row discount-row">
       <span>Discount</span>
@@ -148,15 +148,15 @@
     </div>
     <div class="summary-row" *ngIf="showVat">
       <span>VAT ({{ vatPercent }}%)</span>
-      <span>৳{{ getVatAmount() }}</span>
+      <span>৳{{ getVatAmount() | amount }}</span>
     </div>
     <div class="summary-row" *ngIf="productService.isAdjustmentMode">
       <span>Previous total</span>
-      <span>৳{{ productService.adjustmentContext?.originalTotal }}</span>
+      <span>৳{{ productService.adjustmentContext?.originalTotal | amount }}</span>
     </div>
     <div class="summary-row total-row">
       <span>Total</span>
-      <span class="total-amount">৳{{ getTotal() }}</span>
+      <span class="total-amount">৳{{ getTotal() | amount }}</span>
     </div>
 
     <div class="action-buttons">

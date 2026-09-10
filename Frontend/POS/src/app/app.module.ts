@@ -42,6 +42,7 @@ import { SettingsProductComponent } from './shared/components/settings/settings-
 import { SettingsReceiptComponent } from './shared/components/settings/settings-receipt/settings-receipt.component';
 import { SettingsLineComponent } from './shared/components/settings/settings-line/settings-line.component';
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
+import { AmountPipe } from './shared/pipes/amount.pipe';
 
 @NgModule({
   declarations: [
@@ -64,7 +65,8 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     SettingsShellComponent,
     SettingsProductComponent,
     SettingsReceiptComponent,
-    SettingsLineComponent
+    SettingsLineComponent,
+    AmountPipe
   ],
   imports: [
     BrowserModule,

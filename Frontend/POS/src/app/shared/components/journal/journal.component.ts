@@ -15,6 +15,7 @@ import { ReceiptService } from '../../services/receipt.service';
 import { ReceiptPdfService } from '../../services/receipt-pdf.service';
 import { ReceiptData, ReceiptItemData } from '../../../core/models/receipt';
 import { LineDiscountUnit, ProductView } from '../../../core/models/product-data';
+import { formatAmount } from '../../pipes/amount.pipe';
 
 @Component({
   selector: 'app-journal',
@@ -328,15 +329,15 @@ export class JournalComponent implements OnInit, OnDestroy {
 
   getActionLabel(): string {
     if (!this.productService.isAdjustmentMode) {
-      return `Charge ৳${this.getTotal()}`;
+      return `Charge ৳${formatAmount(this.getTotal())}`;
     }
 
     const delta = this.getAdjustmentDelta();
     if (delta < 0) {
-      return `Return ৳${this.roundMoney(-delta)}`;
+      return `Return ৳${formatAmount(-delta)}`;
     }
     if (delta > 0) {
-      return `Extra charge ৳${delta}`;
+      return `Extra charge ৳${formatAmount(delta)}`;
     }
     return 'Confirm adjustment';
   }

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { ReceiptData } from '../../core/models/receipt';
+import { formatAmount } from '../pipes/amount.pipe';
 import { MatDialog } from '@angular/material/dialog';
 import { ReceiptPreviewComponent } from '../components/receipt-preview/receipt-preview.component';
 
@@ -69,12 +70,12 @@ export class ReceiptPdfService {
             const row = [
                 item.productName,
                 item.quantity,
-                item.price.toFixed(2),
+                formatAmount(item.price),
             ];
             if (receipt.showLineDiscount) {
-                row.push((item.lineDiscount || 0).toFixed(2));
+                row.push(formatAmount(item.lineDiscount || 0));
             }
-            row.push(item.subtotal.toFixed(2));
+            row.push(formatAmount(item.subtotal));
             return row;
         });
 
@@ -103,30 +104,30 @@ export class ReceiptPdfService {
             return doc.text(text, pageWidth - 15 - textWidth, y);
         };
 
-        rightAlign(`Subtotal: ${receipt.total.toFixed(2)}`, finalY + 5);
+        rightAlign(`Subtotal: ${formatAmount(receipt.total)}`, finalY + 5);
 
         let totalsY = finalY + 5;
 
         if (receipt.discountValue > 0) {
             totalsY += 5;
-            rightAlign(`Discount (${receipt.discountUnit}): ${receipt.discountValue}`, totalsY);
+            rightAlign(`Discount (${receipt.discountUnit}): ${formatAmount(receipt.discountValue)}`, totalsY);
             totalsY += 5;
-            rightAlign(`After Discount: ${receipt.priceAfterDiscount.toFixed(2)}`, totalsY);
+            rightAlign(`After Discount: ${formatAmount(receipt.priceAfterDiscount)}`, totalsY);
         }
 
         if (receipt.isAdjustment || receipt.isReturn) {
             const delta = receipt.adjustmentDelta ?? 0;
             totalsY += 5;
             if (delta < 0 || receipt.isReturn) {
-                rightAlign(`Return: ${Math.abs(delta || receipt.changeAmount || receipt.priceAfterDiscount).toFixed(2)}`, totalsY);
+                rightAlign(`Return: ${formatAmount(Math.abs(delta || receipt.changeAmount || receipt.priceAfterDiscount))}`, totalsY);
             } else if (delta > 0) {
-                rightAlign(`Extra charge: ${delta.toFixed(2)}`, totalsY);
+                rightAlign(`Extra charge: ${formatAmount(delta)}`, totalsY);
             }
         } else {
             totalsY += 5;
-            rightAlign(`Cash Received: ${receipt.cashReceived.toFixed(2)}`, totalsY);
+            rightAlign(`Cash Received: ${formatAmount(receipt.cashReceived)}`, totalsY);
             totalsY += 5;
-            rightAlign(`Change: ${receipt.changeAmount.toFixed(2)}`, totalsY);
+            rightAlign(`Change: ${formatAmount(receipt.changeAmount)}`, totalsY);
         }
 
         totalsY += 15;
