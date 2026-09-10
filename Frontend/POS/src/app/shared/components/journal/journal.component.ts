@@ -1,5 +1,6 @@
 import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
 import {
   debounceTime,
@@ -16,6 +17,11 @@ import { ReceiptPdfService } from '../../services/receipt-pdf.service';
 import { ReceiptData, ReceiptItemData } from '../../../core/models/receipt';
 import { LineDiscountUnit, ProductView } from '../../../core/models/product-data';
 import { formatAmount } from '../../pipes/amount.pipe';
+import {
+  ChargeDialogComponent,
+  ChargeDialogData,
+  ChargeDialogResult
+} from '../../dialogs/charge-dialog/charge-dialog.component';
 
 @Component({
   selector: 'app-journal',
@@ -46,6 +52,7 @@ export class JournalComponent implements OnInit, OnDestroy {
     private tenantSettingsService: TenantSettingsService,
     private receiptService: ReceiptService,
     private receiptPdfService: ReceiptPdfService,
+    private dialog: MatDialog,
     private host: ElementRef<HTMLElement>
   ) {}
 
@@ -404,6 +411,27 @@ export class JournalComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const total = this.getTotal();
+    const dialogRef = this.dialog.open<ChargeDialogComponent, ChargeDialogData, ChargeDialogResult>(
+      ChargeDialogComponent,
+      {
+        width: '420px',
+        maxWidth: '95vw',
+        disableClose: true,
+        data: { total }
+      }
+    );
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) {
+        return;
+      }
+
+      this.completeSale(result.cashReceived, result.changeAmount);
+    });
+  }
+
+  private completeSale(cashReceived: number, changeAmount: number): void {
     const subtotal = this.getSubtotal();
     const discount = this.getDiscountValue();
     const total = this.getTotal();
@@ -426,8 +454,8 @@ export class JournalComponent implements OnInit, OnDestroy {
       discountValue: discount,
       discountUnit: 'BDT',
       priceAfterDiscount: total,
-      cashReceived: total,
-      changeAmount: 0,
+      cashReceived,
+      changeAmount,
       items: receiptItems,
       receiptHeader: settings?.receiptHeader,
       receiptFooter: settings?.receiptFooter,
@@ -437,15 +465,26 @@ export class JournalComponent implements OnInit, OnDestroy {
     this.submitting = true;
     this.receiptService.createReceipt(receiptData).subscribe({
       next: (response) => {
+        const preview: ReceiptData = {
+          ...receiptData,
+          ...response,
+          cashReceived,
+          changeAmount,
+          shopName: settings?.name,
+          receiptHeader: settings?.receiptHeader,
+          receiptFooter: settings?.receiptFooter,
+          showLineDiscount: this.showLineDiscount
+        };
+
         this.productService.refreshCatalog().subscribe({
           next: () => {
-            this.receiptPdfService.showReceiptPreview(response || receiptData).subscribe(() => {
+            this.receiptPdfService.showReceiptPreview(preview).subscribe(() => {
               this.submitting = false;
               this.clearReceipt();
             });
           },
           error: () => {
-            this.receiptPdfService.showReceiptPreview(response || receiptData).subscribe(() => {
+            this.receiptPdfService.showReceiptPreview(preview).subscribe(() => {
               this.submitting = false;
               this.clearReceipt();
             });

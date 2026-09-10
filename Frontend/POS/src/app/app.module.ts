@@ -27,6 +27,7 @@ import { AddProductDialogComponent } from './shared/dialogs/add-product-dialog/a
 import { AddTenantProductDialogComponent } from './shared/dialogs/add-tenant-product-dialog/add-tenant-product-dialog.component';
 import { SetPriceDialogComponent } from './shared/dialogs/set-price-dialog/set-price-dialog.component';
 import { AdjustReceiptDialogComponent } from './shared/dialogs/adjust-receipt-dialog/adjust-receipt-dialog.component';
+import { ChargeDialogComponent } from './shared/dialogs/charge-dialog/charge-dialog.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -55,6 +56,7 @@ import { AmountPipe } from './shared/pipes/amount.pipe';
     AddTenantProductDialogComponent,
     SetPriceDialogComponent,
     AdjustReceiptDialogComponent,
+    ChargeDialogComponent,
     LoginComponent,
     RegisterComponent,
     MainLayoutComponent,
