@@ -42,6 +42,8 @@ import { SettingsShellComponent } from './shared/components/settings/settings-sh
 import { SettingsProductComponent } from './shared/components/settings/settings-product/settings-product.component';
 import { SettingsReceiptComponent } from './shared/components/settings/settings-receipt/settings-receipt.component';
 import { SettingsLineComponent } from './shared/components/settings/settings-line/settings-line.component';
+import { CustomersComponent } from './shared/components/customers/customers.component';
+import { AddCustomerDialogComponent } from './shared/dialogs/add-customer-dialog/add-customer-dialog.component';
 import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { AmountPipe } from './shared/pipes/amount.pipe';
 
@@ -68,6 +70,8 @@ import { AmountPipe } from './shared/pipes/amount.pipe';
     SettingsProductComponent,
     SettingsReceiptComponent,
     SettingsLineComponent,
+    CustomersComponent,
+    AddCustomerDialogComponent,
     AmountPipe
   ],
   imports: [

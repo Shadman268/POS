@@ -1,0 +1,24 @@
+.dialog-content {
+  min-width: 360px;
+  max-width: 420px;
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.actions-right {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+@media (max-width: 480px) {
+  .dialog-content {
+    min-width: auto;
+  }
+}

@@ -7,7 +7,7 @@ namespace Backend.DTOs
         public string? GenericName { get; set; }
         public string? Strength { get; set; }
         public string? DosageForm { get; set; }
-        public string                                       Category { get; set; } = "Medicine";
+        public string  Category { get; set; } = "Medicine";
         public string Brand { get; set; } = "General";
         public string Unit { get; set; } = "Tablet";
         public string? Barcode { get; set; }

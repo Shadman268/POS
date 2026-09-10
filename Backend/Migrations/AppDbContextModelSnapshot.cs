@@ -84,6 +84,40 @@ namespace Backend.Migrations
                     b.ToTable("Medicines");
                 });
 
+            modelBuilder.Entity("Backend.Models.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Name");
+
+                    b.HasIndex("TenantId", "Phone")
+                        .IsUnique();
+
+                    b.ToTable("Customers");
+                });
+
             modelBuilder.Entity("Backend.Models.MedicineBatch", b =>
                 {
                     b.Property<int>("Id")
@@ -546,6 +580,17 @@ namespace Backend.Migrations
                     b.Navigation("TenantMedicine");
                 });
 
+            modelBuilder.Entity("Backend.Models.Customer", b =>
+                {
+                    b.HasOne("Backend.Models.Tenant", "Tenant")
+                        .WithMany("Customers")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("Backend.Models.Receipt", b =>
                 {
                     b.HasOne("Backend.Models.Receipt", "OriginalReceipt")
@@ -674,6 +719,8 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.Tenant", b =>
                 {
+                    b.Navigation("Customers");
+
                     b.Navigation("Receipts");
 
                     b.Navigation("TenantMedicines");

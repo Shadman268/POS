@@ -11,6 +11,7 @@ import { SettingsShellComponent } from './shared/components/settings/settings-sh
 import { SettingsProductComponent } from './shared/components/settings/settings-product/settings-product.component';
 import { SettingsReceiptComponent } from './shared/components/settings/settings-receipt/settings-receipt.component';
 import { SettingsLineComponent } from './shared/components/settings/settings-line/settings-line.component';
+import { CustomersComponent } from './shared/components/customers/customers.component';
 import { AuthGuard } from './core/guards/auth.guard';
 
 const routes: Routes = [
@@ -40,6 +41,11 @@ const routes: Routes = [
         path: 'products/catalog',
         component: CatalogComponent,
         data: { title: 'Catalog' }
+      },
+      {
+        path: 'customers',
+        component: CustomersComponent,
+        data: { title: 'Customers' }
       },
       {
         path: 'settings',

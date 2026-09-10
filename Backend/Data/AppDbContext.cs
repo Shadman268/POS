@@ -21,6 +21,7 @@ namespace Backend.Data
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public DbSet<Tenant> Tenants { get; set; } = null!;
+        public DbSet<Customer> Customers { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -120,6 +121,19 @@ namespace Backend.Data
             modelBuilder.Entity<Tenant>()
                 .HasIndex(t => t.ShopCode)
                 .IsUnique();
+
+            modelBuilder.Entity<Customer>()
+                .HasOne(c => c.Tenant)
+                .WithMany(t => t.Customers)
+                .HasForeignKey(c => c.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Customer>()
+                .HasIndex(c => new { c.TenantId, c.Phone })
+                .IsUnique();
+
+            modelBuilder.Entity<Customer>()
+                .HasIndex(c => new { c.TenantId, c.Name });
 
             modelBuilder.Entity<RefreshToken>()
                 .HasKey(rt => rt.Id);

@@ -1,0 +1,80 @@
+<div class="page-shell">
+  <div class="page-header">
+    <div class="header-text">
+      <h1>Customers</h1>
+      <p>View saved customers and add a new name and phone number.</p>
+    </div>
+    <div class="header-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        class="add-btn"
+        (click)="openAddCustomerDialog()"
+        [disabled]="saving"
+      >
+        <mat-icon>{{ saving ? 'hourglass_top' : 'person_add' }}</mat-icon>
+        {{ saving ? 'Saving...' : 'Add Customer' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="feedback success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="feedback error" *ngIf="error">{{ error }}</div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <mat-icon>search</mat-icon>
+      <input
+        type="text"
+        placeholder="Search name or phone number..."
+        [(ngModel)]="search"
+        (keyup.enter)="onSearch()"
+      />
+      <button mat-stroked-button (click)="onSearch()">Search</button>
+    </div>
+    <span class="record-count" *ngIf="hasData">{{ totalCount | number }} customers</span>
+  </div>
+
+  <div class="table-card">
+    <div class="table-wrap">
+      <table class="customers-table">
+        <thead>
+          <tr>
+            <th *ngFor="let col of columns">{{ col.label }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td [attr.colspan]="columns.length" class="state-cell">
+              <mat-spinner diameter="28"></mat-spinner>
+              <span>Loading customers...</span>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && customers.length === 0">
+            <td [attr.colspan]="columns.length" class="state-cell">
+              <span>No customers yet. Add a customer to get started.</span>
+            </td>
+          </tr>
+          <tr *ngFor="let customer of customers">
+            <td>{{ customer.name }}</td>
+            <td>{{ customer.phone }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="hasData && !loading">
+      <div class="page-size">
+        <label>Rows</label>
+        <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+        </select>
+      </div>
+      <div class="page-controls">
+        <button mat-stroked-button (click)="goToPage(page - 1)" [disabled]="page <= 1">Previous</button>
+        <span>Page {{ page }} of {{ totalPages }}</span>
+        <button mat-stroked-button (click)="goToPage(page + 1)" [disabled]="page >= totalPages">Next</button>
+      </div>
+    </div>
+  </div>
+</div>

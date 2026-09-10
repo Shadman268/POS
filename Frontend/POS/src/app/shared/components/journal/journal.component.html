@@ -12,8 +12,17 @@
 
   <!-- Customer row -->
   <div class="customer-row">
-    <span class="customer-name">{{ customerName }}</span>
-    <button class="add-customer-btn" type="button">
+    <select
+      class="customer-select"
+      [(ngModel)]="selectedCustomerId"
+      (ngModelChange)="onCustomerChange()"
+    >
+      <option [ngValue]="walkInCustomerId">{{ walkInCustomerName }}</option>
+      <option *ngFor="let customer of customers" [ngValue]="customer.id">
+        {{ customer.name }}
+      </option>
+    </select>
+    <button class="add-customer-btn" type="button" (click)="openAddCustomerDialog()">
       <mat-icon>person_add</mat-icon>
       Add Customer
     </button>

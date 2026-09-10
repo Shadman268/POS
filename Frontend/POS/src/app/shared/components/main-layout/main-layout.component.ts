@@ -54,7 +54,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
     },
     { label: 'Inventory', icon: 'inventory_2', disabled: true },
     { label: 'Purchases', icon: 'shopping_basket', disabled: true },
-    { label: 'Customers', icon: 'people', disabled: true },
+    { label: 'Customers', icon: 'people', route: '/customers' },
     { label: 'Sales', icon: 'payments', disabled: true },
     { label: 'Reports', icon: 'bar_chart', disabled: true },
     { label: 'User Management', icon: 'manage_accounts', disabled: true },

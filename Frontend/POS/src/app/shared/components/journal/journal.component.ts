@@ -22,6 +22,14 @@ import {
   ChargeDialogData,
   ChargeDialogResult
 } from '../../dialogs/charge-dialog/charge-dialog.component';
+import { AddCustomerDialogComponent } from '../../dialogs/add-customer-dialog/add-customer-dialog.component';
+import { CustomerService } from '../../services/customer.service';
+import {
+  CreateCustomerRequest,
+  Customer,
+  WALK_IN_CUSTOMER_ID,
+  WALK_IN_CUSTOMER_NAME
+} from '../../../core/models/customer';
 
 @Component({
   selector: 'app-journal',
@@ -31,7 +39,11 @@ import {
 export class JournalComponent implements OnInit, OnDestroy {
   @Output() addProductRequest = new EventEmitter<void>();
 
-  customerName = 'Walk-in Customer';
+  readonly walkInCustomerId = WALK_IN_CUSTOMER_ID;
+  readonly walkInCustomerName = WALK_IN_CUSTOMER_NAME;
+  selectedCustomerId = WALK_IN_CUSTOMER_ID;
+  customerName = WALK_IN_CUSTOMER_NAME;
+  customers: Customer[] = [];
   searchControl = new FormControl('');
   filteredProducts: ProductView[] = [];
   activeIndex = -1;
@@ -52,6 +64,7 @@ export class JournalComponent implements OnInit, OnDestroy {
     private tenantSettingsService: TenantSettingsService,
     private receiptService: ReceiptService,
     private receiptPdfService: ReceiptPdfService,
+    private customerService: CustomerService,
     private dialog: MatDialog,
     private host: ElementRef<HTMLElement>
   ) {}
@@ -63,11 +76,17 @@ export class JournalComponent implements OnInit, OnDestroy {
       this.vatPercent = settings?.vatPercent ?? 5;
     });
 
+    this.loadCustomers();
+    this.customerService.customers$.pipe(takeUntil(this.destroy$)).subscribe(customers => {
+      this.customers = customers;
+      this.syncSelectedCustomer();
+    });
+
     this.productService.cartChanged$.pipe(takeUntil(this.destroy$)).subscribe(() => {
       const context = this.productService.adjustmentContext;
       if (context && context.originalReceiptId !== this.loadedAdjustmentId) {
         this.loadedAdjustmentId = context.originalReceiptId;
-        this.customerName = context.customerName;
+        this.selectCustomerByName(context.customerName);
         this.discountAmount = context.originalDiscount;
         this.discountUnit = 'BDT';
       }
@@ -576,13 +595,89 @@ export class JournalComponent implements OnInit, OnDestroy {
     this.productService.exitAdjustmentMode();
     this.discountAmount = 0;
     this.discountUnit = 'BDT';
-    this.customerName = 'Walk-in Customer';
+    this.resetCustomer();
   }
 
   clearReceipt(): void {
     this.productService.clearReceipt();
     this.discountAmount = 0;
     this.discountUnit = 'BDT';
-    this.customerName = 'Walk-in Customer';
+    this.resetCustomer();
+  }
+
+  onCustomerChange(): void {
+    if (this.selectedCustomerId === WALK_IN_CUSTOMER_ID) {
+      this.customerName = WALK_IN_CUSTOMER_NAME;
+      return;
+    }
+
+    const selected = this.customers.find(customer => customer.id === this.selectedCustomerId);
+    this.customerName = selected?.name ?? WALK_IN_CUSTOMER_NAME;
+  }
+
+  openAddCustomerDialog(): void {
+    const dialogRef = this.dialog.open(AddCustomerDialogComponent, {
+      width: '420px',
+      maxWidth: '95vw'
+    });
+
+    dialogRef.afterClosed().subscribe((request: CreateCustomerRequest | undefined) => {
+      if (!request) {
+        return;
+      }
+
+      this.customerService.createCustomer(request).subscribe({
+        next: (created) => {
+          this.selectedCustomerId = created.id;
+          this.customerName = created.name;
+        },
+        error: (error) => {
+          const message = error.error?.message || 'Could not add customer.';
+          window.alert(message);
+        }
+      });
+    });
+  }
+
+  private loadCustomers(): void {
+    this.customerService.getAllCustomers().subscribe({
+      error: () => {
+        this.customers = [];
+      }
+    });
+  }
+
+  private selectCustomerByName(name: string): void {
+    const match = this.customers.find(
+      customer => customer.name.toLowerCase() === (name || '').trim().toLowerCase()
+    );
+
+    if (match) {
+      this.selectedCustomerId = match.id;
+      this.customerName = match.name;
+      return;
+    }
+
+    this.selectedCustomerId = WALK_IN_CUSTOMER_ID;
+    this.customerName = name?.trim() || WALK_IN_CUSTOMER_NAME;
+  }
+
+  private syncSelectedCustomer(): void {
+    if (this.selectedCustomerId !== WALK_IN_CUSTOMER_ID) {
+      const selected = this.customers.find(customer => customer.id === this.selectedCustomerId);
+      if (!selected) {
+        this.selectCustomerByName(this.customerName);
+      }
+      return;
+    }
+
+    if (this.customerName && this.customerName !== WALK_IN_CUSTOMER_NAME) {
+      this.selectCustomerByName(this.customerName);
+    }
+  }
+
+  private resetCustomer(): void {
+    this.selectedCustomerId = WALK_IN_CUSTOMER_ID;
+    this.customerName = WALK_IN_CUSTOMER_NAME;
   }
 }
