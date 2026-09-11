@@ -11,11 +11,16 @@ namespace Backend.Services
     {
         private readonly AppDbContext _context;
         private readonly ITenantContext _tenantContext;
+        private readonly ITenantCatalogService _tenantCatalogService;
 
-        public TenantMedicineService(AppDbContext context, ITenantContext tenantContext)
+        public TenantMedicineService(
+            AppDbContext context,
+            ITenantContext tenantContext,
+            ITenantCatalogService tenantCatalogService)
         {
             _context = context;
             _tenantContext = tenantContext;
+            _tenantCatalogService = tenantCatalogService;
         }
 
         public async Task<PagedTenantMedicineResultDto> GetTenantMedicinesAsync(int page, int pageSize, string? search = null)
@@ -199,6 +204,11 @@ namespace Backend.Services
                 _context.Medicines.Add(medicine);
                 await _context.SaveChangesAsync();
             }
+
+            await _tenantCatalogService.EnsureOptionsAsync(
+                medicine.DosageForm,
+                medicine.Brand,
+                medicine.Unit);
 
             return await UpsertTenantMedicineSettingsAsync(medicine.Id, new UpdateTenantMedicineSettingsDto
             {

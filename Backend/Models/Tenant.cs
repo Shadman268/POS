@@ -57,5 +57,6 @@ namespace Backend.Models
         public ICollection<TenantMedicine> TenantMedicines { get; set; } = new List<TenantMedicine>();
         public ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
         public ICollection<Customer> Customers { get; set; } = new List<Customer>();
+        public ICollection<TenantCatalogOption> CatalogOptions { get; set; } = new List<TenantCatalogOption>();
     }
 }

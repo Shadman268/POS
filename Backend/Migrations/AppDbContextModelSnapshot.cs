@@ -118,6 +118,36 @@ namespace Backend.Migrations
                     b.ToTable("Customers");
                 });
 
+            modelBuilder.Entity("Backend.Models.TenantCatalogOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("OptionType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "OptionType", "Name")
+                        .IsUnique();
+
+                    b.ToTable("TenantCatalogOptions");
+                });
+
             modelBuilder.Entity("Backend.Models.MedicineBatch", b =>
                 {
                     b.Property<int>("Id")
@@ -591,6 +621,17 @@ namespace Backend.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("Backend.Models.TenantCatalogOption", b =>
+                {
+                    b.HasOne("Backend.Models.Tenant", "Tenant")
+                        .WithMany("CatalogOptions")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("Backend.Models.Receipt", b =>
                 {
                     b.HasOne("Backend.Models.Receipt", "OriginalReceipt")
@@ -719,6 +760,8 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.Tenant", b =>
                 {
+                    b.Navigation("CatalogOptions");
+
                     b.Navigation("Customers");
 
                     b.Navigation("Receipts");

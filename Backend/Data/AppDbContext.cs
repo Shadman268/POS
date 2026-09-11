@@ -22,6 +22,7 @@ namespace Backend.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public DbSet<Tenant> Tenants { get; set; } = null!;
         public DbSet<Customer> Customers { get; set; } = null!;
+        public DbSet<TenantCatalogOption> TenantCatalogOptions { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -150,6 +151,16 @@ namespace Backend.Data
 
             modelBuilder.Entity<StockMovement>()
                 .HasIndex(sm => new { sm.TenantId, sm.CreatedAtUtc });
+
+            modelBuilder.Entity<TenantCatalogOption>()
+                .HasOne(o => o.Tenant)
+                .WithMany(t => t.CatalogOptions)
+                .HasForeignKey(o => o.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TenantCatalogOption>()
+                .HasIndex(o => new { o.TenantId, o.OptionType, o.Name })
+                .IsUnique();
         }
     }
 }

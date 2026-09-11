@@ -36,10 +36,11 @@
         type="text"
         placeholder="Search medicine name, generic, or barcode..."
         [formControl]="searchControl"
+        (focus)="onSearchFocus()"
         (keydown)="onSearchKeydown($event)"
         autocomplete="off"
       />
-      <div class="autocomplete-dropdown" *ngIf="filteredProducts.length > 0 || searchLoading">
+      <div class="autocomplete-dropdown" *ngIf="showSearchDropdown && (filteredProducts.length > 0 || searchLoading)">
         <div class="autocomplete-loading" *ngIf="searchLoading">Searching catalog...</div>
         <button
           type="button"

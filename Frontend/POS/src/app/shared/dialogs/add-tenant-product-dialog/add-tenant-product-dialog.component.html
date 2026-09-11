@@ -2,7 +2,9 @@
   <h2 mat-dialog-title>Add Product</h2>
 
   <mat-dialog-content class="dialog-content">
-    <div class="form-grid">
+    <p class="form-error" *ngIf="error">{{ error }}</p>
+
+    <div class="form-grid" [class.loading-options]="loadingOptions">
       <mat-form-field appearance="outline">
         <mat-label>Name</mat-label>
         <input matInput name="name" [(ngModel)]="form.name" required />
@@ -18,9 +20,48 @@
         <input matInput name="strength" [(ngModel)]="form.strength" placeholder="e.g. 500mg" />
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" *ngIf="!creatingNewDose">
         <mat-label>Dosage Form</mat-label>
-        <input matInput name="dosageForm" [(ngModel)]="form.dosageForm" placeholder="e.g. Tablet" />
+        <mat-select
+          name="dosageForm"
+          [(ngModel)]="form.dosageForm"
+          panelClass="create-new-panel"
+          [disabled]="loadingOptions || savingOption"
+          (selectionChange)="onDosageFormChange($event.value)"
+        >
+          <mat-option *ngFor="let dose of dosageForms" [value]="dose">{{ dose }}</mat-option>
+          <mat-option [value]="createNewDoseValue" class="create-new-option">
+            <span class="create-new-label">
+              <mat-icon>add</mat-icon>
+              Create new dose
+            </span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" *ngIf="creatingNewDose">
+        <mat-label>New dosage form</mat-label>
+        <input
+          #newDoseInput
+          matInput
+          name="newDosageForm"
+          [(ngModel)]="newDoseName"
+          placeholder="e.g. Effervescent"
+          (keydown.enter)="onNewDoseEnter($event)"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="confirmNewDose()"
+          [disabled]="!newDoseName.trim()"
+          aria-label="Add dosage form"
+        >
+          <mat-icon>check</mat-icon>
+        </button>
+        <button mat-icon-button matSuffix type="button" (click)="cancelNewDose()" aria-label="Cancel new dosage form">
+          <mat-icon>close</mat-icon>
+        </button>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -28,19 +69,108 @@
         <input matInput name="category" [(ngModel)]="form.category" />
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" *ngIf="!creatingNewBrand">
         <mat-label>Brand</mat-label>
-        <input matInput name="brand" [(ngModel)]="form.brand" />
+        <mat-select
+          name="brand"
+          [(ngModel)]="form.brand"
+          panelClass="create-new-panel"
+          [disabled]="loadingOptions || savingOption"
+          (selectionChange)="onBrandChange($event.value)"
+        >
+          <mat-option *ngFor="let brand of brands" [value]="brand">{{ brand }}</mat-option>
+          <mat-option [value]="createNewBrandValue" class="create-new-option">
+            <span class="create-new-label">
+              <mat-icon>add</mat-icon>
+              Create new brand
+            </span>
+          </mat-option>
+        </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" *ngIf="creatingNewBrand">
+        <mat-label>New brand</mat-label>
+        <input
+          #newBrandInput
+          matInput
+          name="newBrandName"
+          [(ngModel)]="newBrandName"
+          placeholder="e.g. Square"
+          (keydown.enter)="onNewBrandEnter($event)"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="confirmNewBrand()"
+          [disabled]="!newBrandName.trim()"
+          aria-label="Add brand"
+        >
+          <mat-icon>check</mat-icon>
+        </button>
+        <button mat-icon-button matSuffix type="button" (click)="cancelNewBrand()" aria-label="Cancel new brand">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" *ngIf="!creatingNewUnit">
         <mat-label>Unit</mat-label>
-        <input matInput name="unit" [(ngModel)]="form.unit" />
+        <mat-select
+          name="unit"
+          [(ngModel)]="form.unit"
+          panelClass="create-new-panel"
+          [disabled]="loadingOptions || savingOption"
+          matTooltip="How this product is sold and priced (e.g. per strip, bottle, piece)"
+          (selectionChange)="onUnitChange($event.value)"
+        >
+          <mat-option *ngFor="let unit of units" [value]="unit">{{ unit }}</mat-option>
+          <mat-option [value]="createNewUnitValue" class="create-new-option">
+            <span class="create-new-label">
+              <mat-icon>add</mat-icon>
+              Create new unit
+            </span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" *ngIf="creatingNewUnit">
+        <mat-label>New unit</mat-label>
+        <input
+          #newUnitInput
+          matInput
+          name="newUnitName"
+          [(ngModel)]="newUnitName"
+          placeholder="e.g. Blister"
+          (keydown.enter)="onNewUnitEnter($event)"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="confirmNewUnit()"
+          [disabled]="!newUnitName.trim()"
+          aria-label="Add unit"
+        >
+          <mat-icon>check</mat-icon>
+        </button>
+        <button mat-icon-button matSuffix type="button" (click)="cancelNewUnit()" aria-label="Cancel new unit">
+          <mat-icon>close</mat-icon>
+        </button>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Barcode</mat-label>
         <input matInput name="barcode" [(ngModel)]="form.barcode" />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="generateBarcode()"
+          matTooltip="Generate barcode"
+          aria-label="Generate barcode"
+        >
+          <mat-icon>qr_code_2</mat-icon>
+        </button>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -81,7 +211,7 @@
 
   <mat-dialog-actions class="actions-right">
     <button mat-button type="button" (click)="onCancel()">Cancel</button>
-    <button mat-raised-button color="primary" type="submit" [disabled]="!productForm.valid">
+    <button mat-raised-button color="primary" type="submit" [disabled]="!productForm.valid || loadingOptions || savingOption">
       Save
     </button>
   </mat-dialog-actions>

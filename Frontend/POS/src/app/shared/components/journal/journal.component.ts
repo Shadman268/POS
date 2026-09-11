@@ -1,4 +1,12 @@
-import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  Output
+} from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
@@ -48,6 +56,7 @@ export class JournalComponent implements OnInit, OnDestroy {
   filteredProducts: ProductView[] = [];
   activeIndex = -1;
   searchLoading = false;
+  showSearchDropdown = false;
   discountAmount = 0;
   discountUnit: LineDiscountUnit = 'BDT';
   showLineDiscount = false;
@@ -58,6 +67,7 @@ export class JournalComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private latestSearchQuery = '';
   private loadedAdjustmentId: number | null = null;
+  private searchDropdownDismissed = false;
 
   constructor(
     protected productService: ProductService,
@@ -105,11 +115,15 @@ export class JournalComponent implements OnInit, OnDestroy {
           this.filteredProducts = [];
           this.activeIndex = -1;
           this.searchLoading = false;
+          this.showSearchDropdown = false;
         }
       }),
       filter(query => (query || '').trim().length >= 2),
       tap(() => {
         this.searchLoading = true;
+        if (!this.searchDropdownDismissed) {
+          this.showSearchDropdown = true;
+        }
       }),
       switchMap(query => this.productService.searchProducts((query || '').trim())),
       takeUntil(this.destroy$)
@@ -118,12 +132,16 @@ export class JournalComponent implements OnInit, OnDestroy {
         this.searchLoading = false;
         this.filteredProducts = results;
         this.activeIndex = results.length > 0 ? 0 : -1;
+        if (!this.searchDropdownDismissed) {
+          this.showSearchDropdown = true;
+        }
         this.tryAutoAdd(this.latestSearchQuery, results);
       },
       error: () => {
         this.searchLoading = false;
         this.filteredProducts = [];
         this.activeIndex = -1;
+        this.showSearchDropdown = false;
       }
     });
   }
@@ -166,10 +184,50 @@ export class JournalComponent implements OnInit, OnDestroy {
         break;
       case 'Escape':
         event.preventDefault();
-        this.filteredProducts = [];
-        this.activeIndex = -1;
+        this.dismissSearchDropdown();
         break;
     }
+  }
+
+  onSearchFocus(): void {
+    this.searchDropdownDismissed = false;
+    const query = (this.searchControl.value || '').trim();
+    if (query.length < 2) {
+      return;
+    }
+
+    this.showSearchDropdown = true;
+
+    if (this.filteredProducts.length === 0 && !this.searchLoading) {
+      this.searchLoading = true;
+      this.productService.searchProducts(query).subscribe({
+        next: (results) => {
+          this.searchLoading = false;
+          this.filteredProducts = results;
+          this.activeIndex = results.length > 0 ? 0 : -1;
+        },
+        error: () => {
+          this.searchLoading = false;
+          this.filteredProducts = [];
+          this.activeIndex = -1;
+          this.showSearchDropdown = false;
+        }
+      });
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const searchWrap = this.host.nativeElement.querySelector('.search-wrap');
+    if (searchWrap && !searchWrap.contains(event.target as Node)) {
+      this.dismissSearchDropdown();
+    }
+  }
+
+  private dismissSearchDropdown(): void {
+    this.searchDropdownDismissed = true;
+    this.showSearchDropdown = false;
+    this.activeIndex = -1;
   }
 
   private scrollActiveItemIntoView(): void {
@@ -191,6 +249,8 @@ export class JournalComponent implements OnInit, OnDestroy {
     this.filteredProducts = [];
     this.activeIndex = -1;
     this.searchLoading = false;
+    this.showSearchDropdown = false;
+    this.searchDropdownDismissed = false;
   }
 
   addProductToCart(product: ProductView): void {
